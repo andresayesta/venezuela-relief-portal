@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { VENEZUELAN_STATES } from '@/lib/supabase/types';
 import { Turnstile } from '@/components/Turnstile';
+import { createSupabaseBrowserClient } from '@/lib/supabase/browser';
 import type { Locale } from '@/lib/i18n';
 import { submitMissingAction } from '../actions';
 
@@ -11,6 +12,37 @@ export function MissingSubmitForm({ locale }: { locale: Locale }) {
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  async function handleUpload(file: File) {
+    if (file.size > 5 * 1024 * 1024) {
+      setError(locale === 'es' ? 'La imagen excede 5 MB.' : 'Image exceeds 5 MB.');
+      return;
+    }
+    if (!file.type.startsWith('image/')) {
+      setError(locale === 'es' ? 'Solo se permiten imágenes.' : 'Only image files are allowed.');
+      return;
+    }
+    setError(null);
+    setUploading(true);
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const ext = file.name.split('.').pop() ?? 'jpg';
+      const path = `${crypto.randomUUID()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from('missing-photos')
+        .upload(path, file, { upsert: false, contentType: file.type });
+      if (upErr) {
+        setError(upErr.message);
+        return;
+      }
+      const { data: pub } = supabase.storage.from('missing-photos').getPublicUrl(path);
+      setPhotoUrl(pub.publicUrl);
+    } finally {
+      setUploading(false);
+    }
+  }
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -33,6 +65,7 @@ export function MissingSubmitForm({ locale }: { locale: Locale }) {
         description: (form.get('description') as string) || null,
         relationship: (form.get('relationship') as string) || null,
         source: (form.get('source') as string) || null,
+        photo_url: photoUrl,
       });
       if ('error' in r) setError(r.error);
       else setDone(true);
@@ -75,6 +108,53 @@ export function MissingSubmitForm({ locale }: { locale: Locale }) {
         <legend className="px-1 text-xs font-medium uppercase tracking-wide text-slate-600">
           {locale === 'es' ? 'Sobre la persona desaparecida' : 'About the missing person'}
         </legend>
+
+        <div className="rounded border border-slate-200 bg-slate-50 p-3">
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-600">
+            {locale === 'es' ? 'Foto (opcional, ayuda a identificar)' : 'Photo (optional, helps with identification)'}
+          </p>
+          {photoUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={photoUrl}
+              alt=""
+              className="mt-2 max-h-48 rounded border border-slate-200"
+            />
+          )}
+          <div className="mt-2 flex flex-wrap gap-2">
+            <label className="cursor-pointer rounded border border-slate-300 bg-white px-3 py-1.5 text-sm">
+              {uploading
+                ? '...'
+                : photoUrl
+                  ? locale === 'es' ? 'Cambiar' : 'Replace'
+                  : locale === 'es' ? 'Subir foto' : 'Upload photo'}
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/heic"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handleUpload(f);
+                }}
+              />
+            </label>
+            {photoUrl && (
+              <button
+                type="button"
+                onClick={() => setPhotoUrl(null)}
+                className="rounded border border-slate-300 bg-white px-3 py-1.5 text-sm"
+              >
+                {locale === 'es' ? 'Quitar' : 'Remove'}
+              </button>
+            )}
+          </div>
+          <p className="mt-2 text-xs text-slate-500">
+            {locale === 'es'
+              ? 'Máximo 5 MB. Sólo se muestra públicamente después de que el equipo verifique.'
+              : 'Max 5 MB. Only shown publicly after the team verifies.'}
+          </p>
+        </div>
+
         <Field label={`${locale === 'es' ? 'Nombre completo' : 'Full name'} *`}>
           <input name="full_name" required className="w-full rounded border border-slate-300 px-3 py-2" />
         </Field>

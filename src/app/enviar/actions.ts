@@ -32,6 +32,30 @@ function joinSubmittedBy(
 
 const KNOWN_STATES = new Set<string>(VENEZUELAN_STATES);
 
+// Photo URLs must come from our own Supabase Storage so anon submissions can't
+// inject arbitrary external URLs (which we'd then proxy / hotlink).
+const SUPABASE_HOST = (() => {
+  try {
+    return process.env.NEXT_PUBLIC_SUPABASE_URL
+      ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).host
+      : null;
+  } catch {
+    return null;
+  }
+})();
+
+function sanitizePhotoUrl(v: unknown): string | null {
+  if (typeof v !== 'string' || !v) return null;
+  try {
+    const url = new URL(v);
+    if (SUPABASE_HOST && url.host !== SUPABASE_HOST) return null;
+    if (!url.pathname.includes('/missing-photos/')) return null;
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
 const MissingSubmit = Base.extend({
   full_name: z.string().trim().min(1).max(200),
   age: z
@@ -53,6 +77,7 @@ const MissingSubmit = Base.extend({
   description: z.string().trim().max(2000).optional().nullable(),
   relationship: z.string().trim().max(120).optional().nullable(),
   source: z.string().trim().max(200).optional().nullable(),
+  photo_url: z.preprocess(sanitizePhotoUrl, z.string().nullable()),
 });
 
 export async function submitMissingAction(
@@ -74,6 +99,7 @@ export async function submitMissingAction(
     description: parsed.data.description ?? null,
     relationship: parsed.data.relationship ?? null,
     source: parsed.data.source ?? null,
+    photo_url: parsed.data.photo_url ?? null,
     reporter_name: parsed.data.submitter_name?.trim() || null,
     reporter_contact: parsed.data.submitter_contact,
     submitted_by: joinSubmittedBy(parsed.data.submitter_name, parsed.data.submitter_contact),
