@@ -53,10 +53,12 @@ export default async function HomePage() {
           href="/necesito-ayuda"
           className="group rounded-xl border-2 border-[#254499] bg-white p-6 transition hover:bg-[#254499] hover:text-white"
         >
-          <p className="text-xs font-semibold uppercase tracking-wider text-[#254499] group-hover:text-white">
-            A
-          </p>
-          <h2 className="mt-1 text-xl font-semibold">{tr.home.pathA}</h2>
+          <h2 className="flex items-baseline gap-2 text-xl font-semibold">
+            <span className="rounded-md bg-[#254499] px-1.5 py-0.5 text-sm font-bold text-white group-hover:bg-white group-hover:text-[#254499]">
+              A
+            </span>
+            <span>{tr.home.pathA}</span>
+          </h2>
           <p className="mt-2 text-sm text-slate-600 group-hover:text-white/90">
             {tr.home.pathADesc}
           </p>
@@ -65,10 +67,12 @@ export default async function HomePage() {
           href="/donar"
           className="group rounded-xl border-2 border-[#254499] bg-white p-6 transition hover:bg-[#254499] hover:text-white"
         >
-          <p className="text-xs font-semibold uppercase tracking-wider text-[#254499] group-hover:text-white">
-            B
-          </p>
-          <h2 className="mt-1 text-xl font-semibold">{tr.home.pathB}</h2>
+          <h2 className="flex items-baseline gap-2 text-xl font-semibold">
+            <span className="rounded-md bg-[#254499] px-1.5 py-0.5 text-sm font-bold text-white group-hover:bg-white group-hover:text-[#254499]">
+              B
+            </span>
+            <span>{tr.home.pathB}</span>
+          </h2>
           <p className="mt-2 text-sm text-slate-600 group-hover:text-white/90">
             {tr.home.pathBDesc}
           </p>

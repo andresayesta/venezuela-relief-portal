@@ -34,25 +34,42 @@ export default async function RootLayout({
         suppressHydrationWarning
       >
         <header className="border-b border-slate-200 bg-white">
-          <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
-            <Link href="/" className="text-base font-semibold text-[#254499]">
+          <div className="mx-auto flex max-w-5xl items-center gap-3 px-3 py-2">
+            <Link
+              href="/"
+              className="flex-shrink-0 whitespace-nowrap text-sm font-bold text-[#254499] sm:text-base"
+            >
               {tr.siteName}
             </Link>
-            <nav className="flex items-center gap-4 text-sm">
-              <Link href="/necesito-ayuda" className="hover:text-slate-700">
-                {tr.nav.help}
+            <nav className="-mx-1 flex flex-1 items-center gap-1.5 overflow-x-auto px-1 text-xs">
+              <Link
+                href="/necesito-ayuda"
+                className="flex-shrink-0 whitespace-nowrap rounded-full bg-[#254499] px-3 py-1.5 font-semibold text-white hover:bg-[#1d3777]"
+              >
+                A · {tr.home.pathA}
               </Link>
-              <Link href="/donar" className="hover:text-slate-700">
-                {tr.nav.donate}
+              <Link
+                href="/donar"
+                className="flex-shrink-0 whitespace-nowrap rounded-full bg-[#254499] px-3 py-1.5 font-semibold text-white hover:bg-[#1d3777]"
+              >
+                B · {tr.home.pathB}
               </Link>
-              <Link href="/verificado" className="hover:text-slate-700">
-                {tr.nav.verified}
+              <Link
+                href="/verificado"
+                className="flex-shrink-0 whitespace-nowrap rounded-full border border-slate-300 px-3 py-1.5 font-medium text-slate-700 hover:bg-slate-50"
+              >
+                {locale === 'es' ? 'Verificado' : 'Verified'}
               </Link>
-              <Link href="/enviar" className="hover:text-slate-700">
-                {locale === 'es' ? 'Enviar info' : 'Submit info'}
+              <Link
+                href="/enviar"
+                className="flex-shrink-0 whitespace-nowrap rounded-full border border-slate-300 px-3 py-1.5 font-medium text-slate-700 hover:bg-slate-50"
+              >
+                {locale === 'es' ? 'Enviar' : 'Submit'}
               </Link>
-              <LocaleToggle current={locale} />
             </nav>
+            <div className="flex-shrink-0">
+              <LocaleToggle current={locale} />
+            </div>
           </div>
         </header>
         <main className="flex-1">{children}</main>
