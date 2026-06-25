@@ -13,6 +13,7 @@ export type Profile = {
 export type CollectionCenter = {
   id: string;
   name: string;
+  country: string;
   state: string;
   city: string | null;
   neighborhood: string | null;
@@ -143,6 +144,33 @@ export type ResourceLink = {
   is_published: boolean;
   created_at: string;
 };
+
+// ISO-ish country codes used by collection_centers.country and similar
+// fields. 'VE' is the default; the rest are the highest-density Venezuelan
+// diaspora destinations. 'Otro' / 'OTHER' is the catch-all.
+export const COUNTRY_OPTIONS = [
+  { code: 'VE', es: 'Venezuela', en: 'Venezuela' },
+  { code: 'US', es: 'Estados Unidos', en: 'United States' },
+  { code: 'CO', es: 'Colombia', en: 'Colombia' },
+  { code: 'ES', es: 'España', en: 'Spain' },
+  { code: 'PA', es: 'Panamá', en: 'Panama' },
+  { code: 'AR', es: 'Argentina', en: 'Argentina' },
+  { code: 'CL', es: 'Chile', en: 'Chile' },
+  { code: 'PE', es: 'Perú', en: 'Peru' },
+  { code: 'MX', es: 'México', en: 'Mexico' },
+  { code: 'EC', es: 'Ecuador', en: 'Ecuador' },
+  { code: 'BR', es: 'Brasil', en: 'Brazil' },
+  { code: 'IT', es: 'Italia', en: 'Italy' },
+  { code: 'CA', es: 'Canadá', en: 'Canada' },
+  { code: 'PT', es: 'Portugal', en: 'Portugal' },
+  { code: 'DO', es: 'República Dominicana', en: 'Dominican Republic' },
+  { code: 'OTHER', es: 'Otro', en: 'Other' },
+] as const;
+
+export function countryLabel(code: string, locale: 'es' | 'en'): string {
+  const found = COUNTRY_OPTIONS.find((c) => c.code === code);
+  return found ? (locale === 'es' ? found.es : found.en) : code;
+}
 
 export const VENEZUELAN_STATES = [
   'Amazonas',

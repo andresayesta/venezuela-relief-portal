@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { VENEZUELAN_STATES } from '@/lib/supabase/types';
+import { VENEZUELAN_STATES, COUNTRY_OPTIONS } from '@/lib/supabase/types';
 import { Turnstile } from '@/components/Turnstile';
 import type { Locale } from '@/lib/i18n';
 import { submitCenterAction } from '../actions';
@@ -11,6 +11,7 @@ export function CenterSubmitForm({ locale }: { locale: Locale }) {
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [country, setCountry] = useState<string>('VE');
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -26,7 +27,8 @@ export function CenterSubmitForm({ locale }: { locale: Locale }) {
         submitter_name: (form.get('submitter_name') as string) || null,
         submitter_contact: (form.get('submitter_contact') as string) || '',
         name: (form.get('name') as string) || '',
-        state: (form.get('state') as typeof VENEZUELAN_STATES[number]),
+        country,
+        state: (form.get('state') as string) || '',
         city: (form.get('city') as string) || null,
         address: (form.get('address') as string) || null,
         accepted_items: (form.get('accepted_items') as string) || '',
@@ -73,11 +75,14 @@ export function CenterSubmitForm({ locale }: { locale: Locale }) {
           <input name="name" required className="w-full rounded border border-slate-300 px-3 py-2" />
         </Field>
         <div className="grid grid-cols-2 gap-2">
-          <Field label={`${locale === 'es' ? 'Estado' : 'State'} *`}>
-            <select name="state" required defaultValue="" className="w-full rounded border border-slate-300 bg-white px-3 py-2">
-              <option value="" disabled>—</option>
-              {VENEZUELAN_STATES.map((s) => (
-                <option key={s} value={s}>{s}</option>
+          <Field label={`${locale === 'es' ? 'País' : 'Country'} *`}>
+            <select
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+              className="w-full rounded border border-slate-300 bg-white px-3 py-2"
+            >
+              {COUNTRY_OPTIONS.map((c) => (
+                <option key={c.code} value={c.code}>{locale === 'es' ? c.es : c.en}</option>
               ))}
             </select>
           </Field>
@@ -88,6 +93,22 @@ export function CenterSubmitForm({ locale }: { locale: Locale }) {
             </select>
           </Field>
         </div>
+        <Field label={`${
+          country === 'VE'
+            ? (locale === 'es' ? 'Estado' : 'State')
+            : (locale === 'es' ? 'Estado / Región' : 'State / Region')
+        } *`}>
+          {country === 'VE' ? (
+            <select name="state" required defaultValue="" className="w-full rounded border border-slate-300 bg-white px-3 py-2">
+              <option value="" disabled>—</option>
+              {VENEZUELAN_STATES.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          ) : (
+            <input name="state" required placeholder={locale === 'es' ? 'p.ej. Florida' : 'e.g. Florida'} className="w-full rounded border border-slate-300 px-3 py-2" />
+          )}
+        </Field>
         <Field label={locale === 'es' ? 'Ciudad' : 'City'}>
           <input name="city" className="w-full rounded border border-slate-300 px-3 py-2" />
         </Field>

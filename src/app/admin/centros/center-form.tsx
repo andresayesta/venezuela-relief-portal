@@ -6,6 +6,7 @@ import {
   VENEZUELAN_STATES,
   ACCEPTED_ITEM_OPTIONS,
   SOURCE_CHANNEL_OPTIONS,
+  COUNTRY_OPTIONS,
   type CollectionCenter,
 } from '@/lib/supabase/types';
 import { t, type Locale } from '@/lib/i18n';
@@ -77,6 +78,7 @@ export function CenterForm({
   const [photoUrl, setPhotoUrl] = useState<string | null>(initial?.photo_url ?? null);
   const [uploading, setUploading] = useState(false);
   const [eventDate, setEventDate] = useState<string>(initial?.event_date ?? '');
+  const [country, setCountry] = useState<string>(initial?.country ?? 'VE');
 
   // Track form-level state that we may need to override before submit.
   const [autofill, setAutofill] = useState<ExtractedCenter | null>(null);
@@ -129,6 +131,10 @@ export function CenterForm({
       setUrgentPicked(urg.picked);
       setUrgentOther(urg.other);
       if (result.data.event_date) setEventDate(result.data.event_date);
+      if (result.data.country) {
+        const known = COUNTRY_OPTIONS.some((c) => c.code === result.data.country);
+        if (known) setCountry(result.data.country);
+      }
     } finally {
       setExtracting(false);
     }
@@ -145,6 +151,7 @@ export function CenterForm({
       form.set('source', sourceJoined);
       form.set('photo_url', photoUrl ?? '');
       form.set('event_date', eventDate || '');
+      form.set('country', country);
       if (publish) form.set('publish', '1');
       setError(null);
       start(async () => {
@@ -235,19 +242,16 @@ export function CenterForm({
         />
       </Field>
 
-      {/* State + direction */}
+      {/* Country + State/Region + Direction */}
       <div className="grid grid-cols-2 gap-3">
-        <Field label={tr.centers.filterState + ' *'}>
+        <Field label={`${locale === 'es' ? 'País' : 'Country'} *`}>
           <select
-            name="state"
-            required
-            defaultValue={autofill?.state ?? initial?.state ?? ''}
-            key={`state-${autofill?.state ?? ''}`}
+            value={country}
+            onChange={(e) => setCountry(e.target.value)}
             className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-base"
           >
-            <option value="" disabled>—</option>
-            {VENEZUELAN_STATES.map((s) => (
-              <option key={s} value={s}>{s}</option>
+            {COUNTRY_OPTIONS.map((c) => (
+              <option key={c.code} value={c.code}>{locale === 'es' ? c.es : c.en}</option>
             ))}
           </select>
         </Field>
@@ -262,6 +266,36 @@ export function CenterForm({
           </select>
         </Field>
       </div>
+
+      <Field label={`${
+        country === 'VE'
+          ? tr.centers.filterState
+          : locale === 'es' ? 'Estado / Región' : 'State / Region'
+      } *`}>
+        {country === 'VE' ? (
+          <select
+            name="state"
+            required
+            defaultValue={autofill?.state ?? initial?.state ?? ''}
+            key={`state-VE-${autofill?.state ?? ''}`}
+            className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-base"
+          >
+            <option value="" disabled>—</option>
+            {VENEZUELAN_STATES.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+        ) : (
+          <input
+            name="state"
+            required
+            placeholder={locale === 'es' ? 'p.ej. Florida' : 'e.g. Florida'}
+            defaultValue={initial?.country !== 'VE' ? initial?.state ?? '' : ''}
+            key={`state-${country}`}
+            className="w-full rounded border border-slate-300 px-3 py-2 text-base"
+          />
+        )}
+      </Field>
 
       {/* Accepted items */}
       <ItemChecklist

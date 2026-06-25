@@ -114,12 +114,17 @@ export async function submitMissingAction(
 
 // ---------- Collection center ----------
 
+const KNOWN_COUNTRIES = new Set<string>(
+  ['VE', 'US', 'CO', 'ES', 'PA', 'AR', 'CL', 'PE', 'MX', 'EC', 'BR', 'IT', 'CA', 'PT', 'DO', 'OTHER'],
+);
+
 const CenterSubmit = Base.extend({
   name: z.string().trim().min(1).max(200),
-  state: z.preprocess(
-    (v) => (typeof v === 'string' && KNOWN_STATES.has(v) ? v : ''),
-    z.string().min(1),
+  country: z.preprocess(
+    (v) => (typeof v === 'string' && KNOWN_COUNTRIES.has(v) ? v : 'VE'),
+    z.string().min(2),
   ),
+  state: z.string().trim().min(1).max(120),
   city: z.string().trim().max(200).optional().nullable(),
   address: z.string().trim().max(500).optional().nullable(),
   accepted_items: z.string().trim().min(1).max(500),
@@ -128,6 +133,11 @@ const CenterSubmit = Base.extend({
   direction: z.enum(['dropoff', 'pickup']).default('dropoff'),
   contact_phone: z.string().trim().max(60).optional().nullable(),
   source: z.string().trim().max(200).optional().nullable(),
+}).superRefine((data, ctx) => {
+  // When the country is Venezuela, require state to be a known Venezuelan state.
+  if (data.country === 'VE' && !KNOWN_STATES.has(data.state)) {
+    ctx.addIssue({ code: 'custom', path: ['state'], message: 'Invalid state for Venezuela.' });
+  }
 });
 
 export async function submitCenterAction(
@@ -142,6 +152,7 @@ export async function submitCenterAction(
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.from('collection_centers').insert({
     name: parsed.data.name,
+    country: parsed.data.country,
     state: parsed.data.state,
     city: parsed.data.city ?? null,
     address: parsed.data.address ?? null,

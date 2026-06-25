@@ -2,32 +2,44 @@ import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { getLocale } from '@/lib/locale';
 import { t } from '@/lib/i18n';
 import { TrustBadge } from '@/components/TrustBadge';
-import { VENEZUELAN_STATES, type CenterDirection } from '@/lib/supabase/types';
+import { VENEZUELAN_STATES, COUNTRY_OPTIONS, countryLabel, type CenterDirection } from '@/lib/supabase/types';
 import { Filters } from './filters';
+import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
-type Params = { state?: string; direction?: string; q?: string };
+type Params = { state?: string; direction?: string; q?: string; scope?: string; country?: string };
 
 export default async function CentrosPage({
   searchParams,
 }: {
   searchParams: Promise<Params>;
 }) {
-  const { state, direction, q } = await searchParams;
+  const { state, direction, q, scope, country } = await searchParams;
   const locale = await getLocale();
   const tr = t(locale);
   const supabase = await createSupabaseServerClient();
 
+  // Default scope = inside Venezuela.
+  const isDiaspora = scope === 'diaspora';
+
   let query = supabase
     .from('collection_centers')
-    .select('id, name, state, city, neighborhood, accepted_items, urgent_needs, hours, contact_name, contact_phone, direction, trust_tier, updated_at, photo_url, event_date')
+    .select('id, name, country, state, city, neighborhood, accepted_items, urgent_needs, hours, contact_name, contact_phone, direction, trust_tier, updated_at, photo_url, event_date')
     .eq('is_published', true)
     .order('updated_at', { ascending: false });
 
-  const knownStates = VENEZUELAN_STATES as readonly string[];
-  if (state && knownStates.includes(state)) {
-    query = query.eq('state', state);
+  if (isDiaspora) {
+    query = query.neq('country', 'VE');
+    if (country && country !== 'VE') {
+      query = query.eq('country', country);
+    }
+  } else {
+    query = query.eq('country', 'VE');
+    const knownStates = VENEZUELAN_STATES as readonly string[];
+    if (state && knownStates.includes(state)) {
+      query = query.eq('state', state);
+    }
   }
   if (direction === 'dropoff' || direction === 'pickup') {
     query = query.eq('direction', direction as CenterDirection);
@@ -50,10 +62,27 @@ export default async function CentrosPage({
         </p>
       )}
 
+      <div className="mt-4 inline-flex rounded-lg border border-slate-300 bg-white p-1">
+        <Link
+          href={`/centros${direction ? `?direction=${direction}` : ''}`}
+          className={`rounded-md px-3 py-1.5 text-xs font-medium ${!isDiaspora ? 'bg-[#254499] text-white' : 'text-slate-700'}`}
+        >
+          🇻🇪 {locale === 'es' ? 'En Venezuela' : 'Inside Venezuela'}
+        </Link>
+        <Link
+          href={`/centros?scope=diaspora${direction ? `&direction=${direction}` : ''}`}
+          className={`rounded-md px-3 py-1.5 text-xs font-medium ${isDiaspora ? 'bg-[#254499] text-white' : 'text-slate-700'}`}
+        >
+          🌎 {locale === 'es' ? 'Diáspora' : 'Diaspora'}
+        </Link>
+      </div>
+
       <Filters
         currentState={state}
         currentDirection={direction}
         currentQ={q}
+        currentScope={isDiaspora ? 'diaspora' : 'inside'}
+        currentCountry={country}
         locale={locale}
       />
 
@@ -82,6 +111,11 @@ export default async function CentrosPage({
               <div>
                 <h2 className="text-base font-semibold">{c.name}</h2>
                 <p className="text-xs text-slate-600">
+                  {c.country !== 'VE' && (
+                    <span className="mr-1 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide">
+                      {countryLabel(c.country, locale)}
+                    </span>
+                  )}
                   {[c.state, c.city, c.neighborhood].filter(Boolean).join(' · ')}
                 </p>
               </div>

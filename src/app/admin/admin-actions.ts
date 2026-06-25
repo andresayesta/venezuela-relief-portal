@@ -10,6 +10,7 @@ const Direction = z.enum(['dropoff', 'pickup']);
 
 const CenterSchema = z.object({
   name: z.string().trim().min(1),
+  country: z.string().trim().min(2).default('VE'),
   state: z.string().trim().min(1),
   city: z.string().trim().optional().nullable(),
   neighborhood: z.string().trim().optional().nullable(),
@@ -37,6 +38,7 @@ function parseFormToCenter(form: FormData) {
   const raw = Object.fromEntries(form.entries());
   return CenterSchema.safeParse({
     name: raw.name,
+    country: raw.country || 'VE',
     state: raw.state,
     city: raw.city || null,
     neighborhood: raw.neighborhood || null,
