@@ -413,6 +413,7 @@ const ChannelSchema = z.object({
   why_trusted: z.string().trim().optional().nullable(),
   efficiency_note: z.string().trim().optional().nullable(),
   region_focus: z.string().trim().optional().nullable(),
+  payment_details: z.string().optional().nullable(),
   trust_tier: TrustTier.default('verified'),
   sort_order: z
     .preprocess((v) => (v === '' || v == null ? 0 : Number(v)), z.number().int().default(0)),
@@ -428,6 +429,7 @@ function parseFormToChannel(form: FormData) {
     why_trusted: raw.why_trusted || null,
     efficiency_note: raw.efficiency_note || null,
     region_focus: raw.region_focus || null,
+    payment_details: raw.payment_details || null,
     trust_tier: raw.trust_tier || 'verified',
     sort_order: raw.sort_order ?? 0,
   });

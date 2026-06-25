@@ -127,6 +127,7 @@ export type DonationChannel = {
   why_trusted: string | null;
   efficiency_note: string | null;
   region_focus: string | null;
+  payment_details: string | null;
   trust_tier: TrustTier;
   is_published: boolean;
   sort_order: number;

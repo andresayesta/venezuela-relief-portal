@@ -75,6 +75,20 @@ export function ChannelForm({
       <Field label={locale === 'es' ? 'Nota de eficiencia (ej. matching 5x)' : 'Efficiency note (e.g. 5x match)'}>
         <input name="efficiency_note" defaultValue={initial?.efficiency_note ?? ''} className="w-full rounded border border-slate-300 px-3 py-2" />
       </Field>
+      <Field label={locale === 'es' ? 'Detalles de pago (wire, Zelle, Venmo, dirección)' : 'Payment details (wire, Zelle, Venmo, address)'}>
+        <textarea
+          name="payment_details"
+          rows={6}
+          placeholder={locale === 'es' ? 'Banco: ...\nABA: ...\nSWIFT: ...\nCuenta: ...' : 'Bank: ...\nABA: ...\nSWIFT: ...\nAccount: ...'}
+          defaultValue={initial?.payment_details ?? ''}
+          className="w-full rounded border border-slate-300 px-3 py-2 font-mono text-xs"
+        />
+        <span className="mt-1 block text-xs text-slate-500">
+          {locale === 'es'
+            ? 'Aparece en un panel desplegable separado en la tarjeta pública.'
+            : 'Shown in a separate collapsible panel on the public card.'}
+        </span>
+      </Field>
       <div className="grid grid-cols-2 gap-3">
         <Field label={locale === 'es' ? 'Región de enfoque' : 'Region focus'}>
           <input name="region_focus" defaultValue={initial?.region_focus ?? ''} className="w-full rounded border border-slate-300 px-3 py-2" />
