@@ -57,6 +57,34 @@ export default async function DonarPage({
       <h1 className="text-2xl font-semibold">{tr.donate.title}</h1>
       <p className="mt-1 text-sm text-slate-600">{tr.home.pathBDesc}</p>
 
+      {/* Quick jump chips — let users skip past the long org list to centros / volunteering */}
+      <div className="mt-5 flex flex-wrap gap-1.5 text-xs">
+        <a
+          href="#channels"
+          className="rounded-full border border-slate-300 px-3 py-1 text-slate-700 hover:bg-slate-50"
+        >
+          {tr.donate.moneyTitle} <span className="text-slate-400">({orgs.length})</span>
+        </a>
+        <a
+          href="#campaigns"
+          className="rounded-full border border-slate-300 px-3 py-1 text-slate-700 hover:bg-slate-50"
+        >
+          {tr.donate.remittanceTitle} <span className="text-slate-400">({campaigns.length})</span>
+        </a>
+        <a
+          href="#in-kind"
+          className="rounded-full border border-slate-300 px-3 py-1 text-slate-700 hover:bg-slate-50"
+        >
+          {tr.donate.inKindTitle}
+        </a>
+        <a
+          href="#volunteering"
+          className="rounded-full border border-slate-300 px-3 py-1 text-slate-700 hover:bg-slate-50"
+        >
+          {tr.donate.skillsTitle}
+        </a>
+      </div>
+
       <Filters
         currentCategory={category}
         currentQ={q}
@@ -68,7 +96,7 @@ export default async function DonarPage({
         locale={locale}
       />
 
-      <section className="mt-8">
+      <section id="channels" className="mt-8 scroll-mt-4">
         <h2 className="text-lg font-semibold">
           {tr.donate.moneyTitle}{' '}
           <span className="text-sm font-normal text-slate-500">({orgs.length})</span>
@@ -89,7 +117,7 @@ export default async function DonarPage({
         )}
       </section>
 
-      <section className="mt-10">
+      <section id="campaigns" className="mt-10 scroll-mt-4">
         <h2 className="text-lg font-semibold">
           {tr.donate.remittanceTitle}{' '}
           <span className="text-sm font-normal text-slate-500">({campaigns.length})</span>
@@ -114,7 +142,7 @@ export default async function DonarPage({
         )}
       </section>
 
-      <section className="mt-10">
+      <section id="in-kind" className="mt-10 scroll-mt-4">
         <h2 className="text-lg font-semibold">{tr.donate.inKindTitle}</h2>
         <Link
           href="/centros?direction=dropoff"
@@ -131,7 +159,7 @@ export default async function DonarPage({
         </Link>
       </section>
 
-      <section className="mt-10">
+      <section id="volunteering" className="mt-10 scroll-mt-4">
         <h2 className="text-lg font-semibold">{tr.donate.skillsTitle}</h2>
         <p className="mt-2 text-sm text-slate-700">
           {locale === 'es'
