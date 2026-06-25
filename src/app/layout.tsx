@@ -55,12 +55,6 @@ export default async function RootLayout({
                 {tr.home.pathB}
               </Link>
               <Link
-                href="/verificado"
-                className="flex-shrink-0 whitespace-nowrap rounded-full border border-slate-300 px-3 py-1.5 font-medium text-slate-700 hover:bg-slate-50"
-              >
-                {locale === 'es' ? 'Verificado' : 'Verified'}
-              </Link>
-              <Link
                 href="/enviar"
                 className="flex-shrink-0 whitespace-nowrap rounded-full border border-slate-300 px-3 py-1.5 font-medium text-slate-700 hover:bg-slate-50"
               >
