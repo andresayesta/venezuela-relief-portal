@@ -11,6 +11,7 @@ const CATEGORY_ORDER = [
   'emergency',
   'hospital',
   'shelter',
+  'related_tool',
   'official_app',
   'official_source',
   'consular',
@@ -33,6 +34,7 @@ const CATEGORY_LABEL: Record<string, { es: string; en: string }> = {
   anti_scam: { es: 'Evita estafas', en: 'Avoid scams' },
   in_kind_guidance: { es: 'Donaciones en especie', en: 'In-kind guidance' },
   skills_volunteering: { es: 'Voluntariado profesional', en: 'Skills volunteering' },
+  related_tool: { es: 'Otros sitios y herramientas', en: 'Other sites and tools' },
 };
 
 type Params = {

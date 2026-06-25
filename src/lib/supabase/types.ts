@@ -77,6 +77,7 @@ export const RESOURCE_CATEGORIES = [
   { value: 'anti_scam', es: 'Evita estafas', en: 'Avoid scams' },
   { value: 'in_kind_guidance', es: 'Donaciones en especie', en: 'In-kind guidance' },
   { value: 'skills_volunteering', es: 'Voluntariado profesional', en: 'Skills volunteering' },
+  { value: 'related_tool', es: 'Otros sitios y herramientas', en: 'Other sites and tools' },
 ] as const;
 
 export const SOURCE_CHANNEL_OPTIONS = [
