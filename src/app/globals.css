@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+/* Brand palette from the spec: black #111111, blue #254499 as the single accent,
+   gold #F8CB78 reserved for the Verificado badge. Site is light only — read
+   under stress on small screens needs maximum contrast. */
+
+:root {
+  --color-bg: #ffffff;
+  --color-fg: #111111;
+  --color-accent: #254499;
+  --color-verified: #F8CB78;
+}
+
+@theme inline {
+  --color-background: var(--color-bg);
+  --color-foreground: var(--color-fg);
+  --font-sans: var(--font-geist-sans);
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
