@@ -61,6 +61,7 @@ export const DONATION_CATEGORIES = [
   { value: 'shelter', es: 'Refugio', en: 'Shelter' },
   { value: 'food', es: 'Comida', en: 'Food' },
   { value: 'family_tracing', es: 'Búsqueda de familia', en: 'Family tracing' },
+  { value: 'family_campaign', es: 'Campaña directa (GoFundMe, etc.)', en: 'Direct campaign (GoFundMe, etc.)' },
   { value: 'general', es: 'General', en: 'General' },
 ] as const;
 

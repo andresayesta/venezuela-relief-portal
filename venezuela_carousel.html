@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>We Help Venezuela — Carousel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blue:#254499;
+    --gold:#F8CB78;
+    --ink:#111111;
+    --paper:#ffffff;
+    --muted:#525a68;
+    --page:#eceef1;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    background:var(--page);
+    font-family:"Inter",system-ui,sans-serif;
+    color:var(--ink);
+    padding:32px 16px 64px;
+    display:flex;flex-direction:column;align-items:center;gap:10px;
+  }
+  .guide{
+    max-width:540px;text-align:center;color:var(--muted);
+    font-size:14px;line-height:1.5;margin-bottom:14px;
+  }
+  .guide strong{color:var(--ink);}
+  .lang-head{
+    width:min(94vw,540px);margin:26px 0 4px;
+    font-family:"Archivo",sans-serif;font-weight:800;font-size:13px;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--blue);
+    display:flex;align-items:center;gap:10px;
+  }
+  .lang-head::after{content:"";flex:1;height:2px;background:var(--gold);}
+  .tag{
+    width:min(94vw,540px);font-size:12px;color:var(--muted);
+    margin:2px 0 6px;letter-spacing:.04em;
+  }
+
+  /* ---- Slide card: locked to Instagram 4:5 ---- */
+  .slide{
+    width:min(94vw,540px);
+    aspect-ratio:4/5;
+    background:var(--paper);
+    container-type:size;
+    position:relative;
+    overflow:hidden;
+    box-shadow:0 6px 24px rgba(17,17,17,.10);
+    display:flex;flex-direction:column;
+    padding:9cqw;
+  }
+
+  /* shared structural pieces (sized in container units = scales with the card) */
+  .top{display:flex;align-items:center;justify-content:space-between;gap:3cqw;}
+  .stars{color:var(--gold);font-size:4.4cqw;letter-spacing:1.4cqw;line-height:1;}
+  .eyebrow{
+    font-family:"Archivo",sans-serif;font-weight:700;
+    font-size:3.1cqw;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--blue);
+  }
+  .eyebrow.muted{color:var(--muted);}
+  .body-zone{flex:1;display:flex;flex-direction:column;justify-content:center;position:relative;z-index:2;}
+  h1{
+    font-family:"Archivo",sans-serif;font-weight:900;color:var(--ink);
+    font-size:9.6cqw;line-height:1.02;letter-spacing:-.015em;
+  }
+  h1 .blue{color:var(--blue);}
+  .rule{width:14cqw;height:1.1cqw;background:var(--gold);margin:4.4cqw 0;border-radius:1cqw;}
+  p.support{
+    font-size:4.35cqw;line-height:1.34;color:var(--muted);
+    max-width:82%;font-weight:400;
+  }
+  .foot{display:flex;align-items:center;justify-content:space-between;gap:3cqw;}
+  .url{font-family:"Archivo",sans-serif;font-weight:800;font-size:3.7cqw;color:var(--blue);letter-spacing:-.01em;}
+  .count{font-size:3cqw;color:var(--muted);font-weight:500;letter-spacing:.05em;}
+
+  /* ghost numeral for the 3 "ways" slides */
+  .ghost{
+    position:absolute;z-index:1;top:50%;right:-2cqw;transform:translateY(-50%);
+    font-family:"Archivo",sans-serif;font-weight:900;font-size:62cqw;line-height:1;
+    color:var(--gold);opacity:.20;pointer-events:none;
+  }
+
+  /* cover + CTA emphasis */
+  .slide.cover h1,.slide.cta h1{font-size:11.4cqw;color:var(--blue);}
+  .slide.cover .lead,.slide.cta .lead{font-size:4.5cqw;color:var(--ink);font-weight:500;margin-top:4.4cqw;line-height:1.35;max-width:90%;}
+  .bigurl{
+    font-family:"Archivo",sans-serif;font-weight:900;font-size:6.6cqw;
+    color:var(--blue);letter-spacing:-.02em;margin-top:5cqw;
+  }
+  .share-line{font-size:4.2cqw;color:var(--muted);margin-top:2.6cqw;font-weight:500;}
+  .flag{font-size:5cqw;}
+
+  @media print{body{background:#fff;}.guide,.tag,.lang-head{display:none;}.slide{box-shadow:none;}}
+</style>
+</head>
+<body>
+
+  <div class="guide">
+    <strong>Screenshot each white card</strong> to post as an Instagram carousel (4:5).
+    English set first, Spanish set below. Open this file and widen the window for a higher-resolution screenshot.
+  </div>
+
+  <!-- ====================== ENGLISH ====================== -->
+  <div class="lang-head">English</div>
+
+  <div class="tag">Slide 1 — Cover</div>
+  <div class="slide cover">
+    <div class="top"><span class="eyebrow">Venezuela Responde</span><span class="stars">★★★★★★★★</span></div>
+    <div class="body-zone">
+      <h1>How you can <span class="blue">help</span> Venezuela</h1>
+      <div class="rule"></div>
+      <p class="lead">After the June 24 earthquakes. Three simple ways to make a difference today.</p>
+    </div>
+    <div class="foot"><span class="url">wehelpvenezuela.org</span><span class="count">Swipe →</span></div>
+  </div>
+
+  <div class="tag">Slide 2 — What happened</div>
+  <div class="slide">
+    <div class="top"><span class="eyebrow">What happened</span><span class="stars">★★★★★★★★</span></div>
+    <div class="body-zone">
+      <h1>One of the strongest in a <span class="blue">century</span></h1>
+      <div class="rule"></div>
+      <p class="support">On June 24, two earthquakes struck western Venezuela. Thousands of families need shelter, medical care, and supplies right now.</p>
+    </div>
+    <div class="foot"><span class="url">wehelpvenezuela.org</span><span class="count">2 / 8</span></div>
+  </div>
+
+  <div class="tag">Slide 3 — One place to help</div>
+  <div class="slide">
+    <div class="top"><span class="eyebrow">The site</span><span class="stars">★★★★★★★★</span></div>
+    <div class="body-zone">
+      <h1>One place <span class="blue">to help</span></h1>
+      <div class="rule"></div>
+      <p class="support">wehelpvenezuela.org brings earthquake relief into a single hub. Real information, checked by real people.</p>
+    </div>
+    <div class="foot"><span class="url">wehelpvenezuela.org</span><span class="count">3 / 8</span></div>
+  </div>
+
+  <div class="tag">Slide 4 — Way 1</div>
+  <div class="slide">
+    <div class="ghost">1</div>
+    <div class="top"><span class="eyebrow">1 / 3 · Share it</span><span class="stars">★★★★★★★★</span></div>
+    <div class="body-zone">
+      <h1>Share <span class="blue">it</span></h1>
+      <div class="rule"></div>
+      <p class="support">Someone you know has family or ties in Venezuela. Sharing this takes seconds and reaches people who need it.</p>
+    </div>
+    <div class="foot"><span class="url">wehelpvenezuela.org</span><span class="count">4 / 8</span></div>
+  </div>
+
+  <div class="tag">Slide 5 — Way 2</div>
+  <div class="slide">
+    <div class="ghost">2</div>
+    <div class="top"><span class="eyebrow">2 / 3 · Add what you know</span><span class="stars">★★★★★★★★</span></div>
+    <div class="body-zone">
+      <h1>Add what <span class="blue">you know</span></h1>
+      <div class="rule"></div>
+      <p class="support">Know a collection center, a missing person, or an aid effort? Submit it on the site and our team gets it live.</p>
+    </div>
+    <div class="foot"><span class="url">wehelpvenezuela.org</span><span class="count">5 / 8</span></div>
+  </div>
+
+  <div class="tag">Slide 6 — Way 3</div>
+  <div class="slide">
+    <div class="ghost">3</div>
+    <div class="top"><span class="eyebrow">3 / 3 · Give where it counts</span><span class="stars">★★★★★★★★</span></div>
+    <div class="body-zone">
+      <h1>Give where <span class="blue">it counts</span></h1>
+      <div class="rule"></div>
+      <p class="support">If you can donate, give through the trusted channels on the site. Real organizations, real impact.</p>
+    </div>
+    <div class="foot"><span class="url">wehelpvenezuela.org</span><span class="count">6 / 8</span></div>
+  </div>
+
+  <div class="tag">Slide 7 — Why it matters</div>
+  <div class="slide">
+    <div class="top"><span class="eyebrow">Why it matters</span><span class="stars">★★★★★★★★</span></div>
+    <div class="body-zone">
+      <h1>Information is <span class="blue">aid</span></h1>
+      <div class="rule"></div>
+      <p class="support">In a disaster, good information is its own form of help. Every share, every report, every gift reaches a family.</p>
+    </div>
+    <div class="foot"><span class="url">wehelpvenezuela.org</span><span class="count">7 / 8</span></div>
+  </div>
+
+  <div class="tag">Slide 8 — Call to action</div>
+  <div class="slide cta">
+    <div class="top"><span class="eyebrow">Start here</span><span class="stars">★★★★★★★★</span></div>
+    <div class="body-zone">
+      <h1>Start <span class="blue">here</span></h1>
+      <div class="bigurl">wehelpvenezuela.org</div>
+      <div class="share-line">Share this post. Tap the link in bio. <span class="flag">🇻🇪</span></div>
+    </div>
+    <div class="foot"><span class="url">We Help Venezuela</span><span class="count">8 / 8</span></div>
+  </div>
+
+  <!-- ====================== SPANISH ====================== -->
+  <div class="lang-head">Español</div>
+
+  <div class="tag">Diapositiva 1 — Portada</div>
+  <div class="slide cover">
+    <div class="top"><span class="eyebrow">Venezuela Responde</span><span class="stars">★★★★★★★★</span></div>
+    <div class="body-zone">
+      <h1>Cómo puedes <span class="blue">ayudar</span></h1>
+      <div class="rule"></div>
+      <p class="lead">Tras los terremotos del 24 de junio. Tres formas simples de marcar la diferencia hoy.</p>
+    </div>
+    <div class="foot"><span class="url">wehelpvenezuela.org</span><span class="count">Desliza →</span></div>
+  </div>
+
+  <div class="tag">Diapositiva 2 — Qué pasó</div>
+  <div class="slide">
+    <div class="top"><span class="eyebrow">Qué pasó</span><span class="stars">★★★★★★★★</span></div>
+    <div class="body-zone">
+      <h1>De los más fuertes en un <span class="blue">siglo</span></h1>
+      <div class="rule"></div>
+      <p class="support">El 24 de junio, dos terremotos sacudieron el occidente de Venezuela. Miles de familias necesitan refugio, atención médica y suministros ahora.</p>
+    </div>
+    <div class="foot"><span class="url">wehelpvenezuela.org</span><span class="count">2 / 8</span></div>
+  </div>
+
+  <div class="tag">Diapositiva 3 — Un solo lugar</div>
+  <div class="slide">
+    <div class="top"><span class="eyebrow">El sitio</span><span class="stars">★★★★★★★★</span></div>
+    <div class="body-zone">
+      <h1>Un solo lugar <span class="blue">para ayudar</span></h1>
+      <div class="rule"></div>
+      <p class="support">wehelpvenezuela.org reúne la ayuda del terremoto en un solo lugar. Información real, revisada por personas reales.</p>
+    </div>
+    <div class="foot"><span class="url">wehelpvenezuela.org</span><span class="count">3 / 8</span></div>
+  </div>
+
+  <div class="tag">Diapositiva 4 — Forma 1</div>
+  <div class="slide">
+    <div class="ghost">1</div>
+    <div class="top"><span class="eyebrow">1 / 3 · Compártelo</span><span class="stars">★★★★★★★★</span></div>
+    <div class="body-zone">
+      <h1>Compár<span class="blue">telo</span></h1>
+      <div class="rule"></div>
+      <p class="support">Alguien que conoces tiene familia o vínculos en Venezuela. Compartir esto toma segundos y llega a quien lo necesita.</p>
+    </div>
+    <div class="foot"><span class="url">wehelpvenezuela.org</span><span class="count">4 / 8</span></div>
+  </div>
+
+  <div class="tag">Diapositiva 5 — Forma 2</div>
+  <div class="slide">
+    <div class="ghost">2</div>
+    <div class="top"><span class="eyebrow">2 / 3 · Aporta lo que sabes</span><span class="stars">★★★★★★★★</span></div>
+    <div class="body-zone">
+      <h1>Aporta lo que <span class="blue">sabes</span></h1>
+      <div class="rule"></div>
+      <p class="support">¿Sabes de un centro de acopio, una persona desaparecida o un esfuerzo de ayuda? Envíalo en el sitio y nuestro equipo lo publica.</p>
+    </div>
+    <div class="foot"><span class="url">wehelpvenezuela.org</span><span class="count">5 / 8</span></div>
+  </div>
+
+  <div class="tag">Diapositiva 6 — Forma 3</div>
+  <div class="slide">
+    <div class="ghost">3</div>
+    <div class="top"><span class="eyebrow">3 / 3 · Dona donde cuenta</span><span class="stars">★★★★★★★★</span></div>
+    <div class="body-zone">
+      <h1>Dona donde <span class="blue">cuenta</span></h1>
+      <div class="rule"></div>
+      <p class="support">Si puedes donar, hazlo por los canales confiables del sitio. Organizaciones reales, impacto real.</p>
+    </div>
+    <div class="foot"><span class="url">wehelpvenezuela.org</span><span class="count">6 / 8</span></div>
+  </div>
+
+  <div class="tag">Diapositiva 7 — Por qué importa</div>
+  <div class="slide">
+    <div class="top"><span class="eyebrow">Por qué importa</span><span class="stars">★★★★★★★★</span></div>
+    <div class="body-zone">
+      <h1>La información es <span class="blue">ayuda</span></h1>
+      <div class="rule"></div>
+      <p class="support">En un desastre, la buena información es una forma de ayuda. Cada vez que compartes, reportas o donas, llegas a una familia.</p>
+    </div>
+    <div class="foot"><span class="url">wehelpvenezuela.org</span><span class="count">7 / 8</span></div>
+  </div>
+
+  <div class="tag">Diapositiva 8 — Cierre</div>
+  <div class="slide cta">
+    <div class="top"><span class="eyebrow">Empieza aquí</span><span class="stars">★★★★★★★★</span></div>
+    <div class="body-zone">
+      <h1>Empieza <span class="blue">aquí</span></h1>
+      <div class="bigurl">wehelpvenezuela.org</div>
+      <div class="share-line">Comparte este post. Enlace en la bio. <span class="flag">🇻🇪</span></div>
+    </div>
+    <div class="foot"><span class="url">Venezuela Responde</span><span class="count">8 / 8</span></div>
+  </div>
+
+</body>
+</html>

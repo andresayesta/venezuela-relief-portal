@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { getLocale } from '@/lib/locale';
 import { t } from '@/lib/i18n';
 import { LocaleToggle } from '@/components/LocaleToggle';
-import { BottomNav } from '@/components/BottomNav';
 import './globals.css';
 
 const geistSans = Geist({
@@ -53,15 +52,17 @@ export default async function RootLayout({
         suppressHydrationWarning
       >
         <header className="border-b border-slate-200 bg-white">
-          <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-3 py-2">
+          <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-3 px-3 py-2">
             <Link
               href="/"
-              className="whitespace-nowrap text-sm font-bold text-[#254499] sm:text-base"
+              className="order-1 flex-shrink-0 whitespace-nowrap text-sm font-bold text-[#254499] sm:text-base"
             >
               {tr.siteName}
             </Link>
-            {/* Desktop nav (hidden on mobile — uses bottom tab bar instead) */}
-            <nav className="hidden flex-1 items-center justify-end gap-1.5 text-xs sm:flex">
+            <div className="order-2 ml-auto sm:order-3 sm:ml-0">
+              <LocaleToggle current={locale} />
+            </div>
+            <nav className="order-3 flex w-full flex-wrap items-center justify-center gap-1.5 text-xs sm:order-2 sm:w-auto sm:flex-1 sm:justify-end">
               <Link
                 href="/necesito-ayuda"
                 className="whitespace-nowrap rounded-full bg-[#254499] px-3 py-1.5 font-semibold text-white hover:bg-[#1d3777]"
@@ -81,11 +82,9 @@ export default async function RootLayout({
                 {locale === 'es' ? 'Reportar' : 'Report'}
               </Link>
             </nav>
-            <LocaleToggle current={locale} />
           </div>
         </header>
-        <main className="flex-1 pb-20 sm:pb-0">{children}</main>
-        <BottomNav locale={locale} />
+        <main className="flex-1">{children}</main>
         <footer className="border-t border-slate-200 py-6">
           <div className="mx-auto max-w-3xl px-4 text-center text-xs leading-relaxed text-slate-500">
             <p>{tr.disclaimer}</p>
