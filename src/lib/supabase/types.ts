@@ -167,6 +167,7 @@ export const COUNTRY_OPTIONS = [
   { code: 'CA', es: 'Canadá', en: 'Canada' },
   { code: 'PT', es: 'Portugal', en: 'Portugal' },
   { code: 'DO', es: 'República Dominicana', en: 'Dominican Republic' },
+  { code: 'UY', es: 'Uruguay', en: 'Uruguay' },
   { code: 'OTHER', es: 'Otro', en: 'Other' },
 ] as const;
 
