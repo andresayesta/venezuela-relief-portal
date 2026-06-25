@@ -67,13 +67,15 @@ export default async function RootLayout({
           </div>
         </header>
         <main className="flex-1">{children}</main>
-        <footer className="border-t border-slate-200 py-6 text-center text-xs text-slate-500">
-          <p>{tr.tagline}</p>
-          <p className="mt-2">
-            <Link href="/admin" className="text-slate-400 hover:text-slate-600">
-              {tr.nav.admin}
-            </Link>
-          </p>
+        <footer className="border-t border-slate-200 py-6">
+          <div className="mx-auto max-w-3xl px-4 text-center text-xs leading-relaxed text-slate-500">
+            <p>{tr.disclaimer}</p>
+            <p className="mt-3">
+              <Link href="/admin" className="text-slate-400 hover:text-slate-600">
+                {tr.nav.admin}
+              </Link>
+            </p>
+          </div>
         </footer>
       </body>
     </html>

@@ -86,7 +86,52 @@ export default async function HomePage() {
         {tr.home.pathC} →
       </Link>
 
-      <dl className="mt-10 grid grid-cols-3 gap-3 text-center">
+      <section className="mt-12">
+        <h2 className="text-xl font-semibold text-[#111111]">
+          {tr.about.whatHappened}
+        </h2>
+        <p className="mt-3 text-base leading-relaxed text-slate-700">
+          {tr.about.whatHappenedBody1}
+        </p>
+        <p className="mt-3 text-base leading-relaxed text-slate-700">
+          {tr.about.whatHappenedBody2}
+        </p>
+      </section>
+
+      <section className="mt-10">
+        <h2 className="text-xl font-semibold text-[#111111]">
+          {tr.about.whyTitle}
+        </h2>
+        <p className="mt-3 text-base leading-relaxed text-slate-700">
+          {tr.about.whyBody}
+        </p>
+      </section>
+
+      <section className="mt-10">
+        <h2 className="text-xl font-semibold text-[#111111]">
+          {tr.about.howHelpTitle}
+        </h2>
+        <p className="mt-3 text-base text-slate-700">{tr.about.howHelpIntro}</p>
+        <ol className="mt-4 space-y-4">
+          <HelpStep
+            n={1}
+            title={tr.about.howHelp1Title}
+            body={tr.about.howHelp1Body}
+          />
+          <HelpStep
+            n={2}
+            title={tr.about.howHelp2Title}
+            body={tr.about.howHelp2Body}
+          />
+          <HelpStep
+            n={3}
+            title={tr.about.howHelp3Title}
+            body={tr.about.howHelp3Body}
+          />
+        </ol>
+      </section>
+
+      <dl className="mt-12 grid grid-cols-3 gap-3 text-center">
         <Stat n={stats.centers} label={tr.home.stats.centers} />
         <Stat n={stats.missing} label={tr.home.stats.missing} />
         <Stat n={stats.channels} label={tr.home.stats.channels} />
@@ -109,5 +154,19 @@ function Stat({ n, label }: { n: number; label: string }) {
       <dt className="text-xs uppercase tracking-wide text-slate-500">{label}</dt>
       <dd className="mt-1 text-2xl font-semibold text-[#254499]">{n}</dd>
     </div>
+  );
+}
+
+function HelpStep({ n, title, body }: { n: number; title: string; body: string }) {
+  return (
+    <li className="flex gap-3">
+      <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-[#254499] text-sm font-bold text-white">
+        {n}
+      </span>
+      <div>
+        <h3 className="text-base font-semibold text-slate-900">{title}</h3>
+        <p className="mt-1 text-sm leading-relaxed text-slate-700">{body}</p>
+      </div>
+    </li>
   );
 }

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { getLocale } from '@/lib/locale';
+import { t } from '@/lib/i18n';
 
 export default async function EnviarIndex() {
   const locale = await getLocale();
@@ -9,11 +10,8 @@ export default async function EnviarIndex() {
       <h1 className="text-2xl font-semibold">
         {locale === 'es' ? 'Reportar información' : 'Report information'}
       </h1>
-      <p className="mt-1 text-sm text-slate-600">
-        {locale === 'es'
-          ? 'Nuestro equipo revisa cada envío y verifica con quien reporta antes de publicar. Nada se hace público sin esa verificación.'
-          : 'Our team reviews every submission and confirms with the reporter before publishing. Nothing goes live without that verification.'}
-      </p>
+      <p className="mt-2 text-base text-slate-700">{t(locale).submitPrompt.headline}</p>
+      <p className="mt-1 text-sm text-slate-600">{t(locale).submitPrompt.reassurance}</p>
 
       <ul className="mt-6 space-y-3">
         <Card
