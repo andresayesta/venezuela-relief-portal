@@ -60,53 +60,45 @@ export default async function AdminDashboard() {
         </form>
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Link
-          href="/admin/centros/new"
-          className="rounded-lg bg-[#254499] px-4 py-6 text-center text-base font-semibold text-white"
-        >
-          {tr.admin.addCenter}
-        </Link>
-        <Link
-          href="/admin/desaparecidos/new"
-          className="rounded-lg bg-[#254499] px-4 py-6 text-center text-base font-semibold text-white"
-        >
-          {tr.admin.addMissing}
-        </Link>
-        <Link
+      {/* Primary daily workflow */}
+      <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <SectionCard
           href="/admin/centros"
-          className="rounded-lg border border-slate-300 px-4 py-6 text-center text-sm font-medium"
-        >
-          {tr.admin.manageCenters}
-        </Link>
-        <Link
+          title={tr.admin.manageCenters}
+          desc={locale === 'es'
+            ? 'Ver, agregar y editar centros de acopio.'
+            : 'View, add, and edit collection centers.'}
+        />
+        <SectionCard
           href="/admin/desaparecidos"
-          className="rounded-lg border border-slate-300 px-4 py-6 text-center text-sm font-medium"
-        >
-          {tr.admin.manageMissing}
-        </Link>
+          title={tr.admin.manageMissing}
+          desc={locale === 'es'
+            ? 'Ver, agregar y editar reportes de desaparecidos.'
+            : 'View, add, and edit missing-person reports.'}
+        />
       </div>
 
+      {/* Admin-only sections */}
       {session.profile.role === 'admin' && (
-        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <Link
+        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <SectionCard
             href="/admin/canales"
-            className="rounded-lg border border-slate-300 px-4 py-4 text-center text-sm font-medium"
-          >
-            {tr.admin.manageChannels}
-          </Link>
-          <Link
+            title={tr.admin.manageChannels}
+            desc={locale === 'es' ? 'Canales verificados.' : 'Verified channels.'}
+            compact
+          />
+          <SectionCard
             href="/admin/recursos"
-            className="rounded-lg border border-slate-300 px-4 py-4 text-center text-sm font-medium"
-          >
-            {tr.admin.manageResources}
-          </Link>
-          <Link
+            title={tr.admin.manageResources}
+            desc={locale === 'es' ? 'Emergencias, refugios, etc.' : 'Emergency, shelters, etc.'}
+            compact
+          />
+          <SectionCard
             href="/admin/equipo"
-            className="rounded-lg border border-slate-300 px-4 py-4 text-center text-sm font-medium"
-          >
-            {tr.admin.team}
-          </Link>
+            title={tr.admin.team}
+            desc={locale === 'es' ? 'Miembros del equipo.' : 'Team members.'}
+            compact
+          />
         </div>
       )}
 
@@ -121,5 +113,31 @@ export default async function AdminDashboard() {
         locale={locale}
       />
     </div>
+  );
+}
+
+function SectionCard({
+  href,
+  title,
+  desc,
+  compact,
+}: {
+  href: string;
+  title: string;
+  desc: string;
+  compact?: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      className={`group rounded-lg border-2 border-[#254499] bg-white text-left transition hover:bg-[#254499] hover:text-white ${
+        compact ? 'p-4' : 'p-5'
+      }`}
+    >
+      <h2 className={`font-semibold ${compact ? 'text-base' : 'text-lg'}`}>{title}</h2>
+      <p className={`mt-1 text-sm text-slate-600 group-hover:text-white/90 ${compact ? 'text-xs' : ''}`}>
+        {desc}
+      </p>
+    </Link>
   );
 }
