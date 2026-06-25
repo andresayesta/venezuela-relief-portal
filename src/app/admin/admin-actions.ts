@@ -367,6 +367,40 @@ export async function deleteMissingAction(id: string): Promise<ActionResult> {
   return { ok: true };
 }
 
+// ---------- Missing-person tips ----------
+
+export async function markTipReviewedAction(
+  id: string,
+): Promise<ActionResult> {
+  const session = await requireAdmin();
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase
+    .from('missing_person_tips')
+    .update({
+      reviewed: true,
+      reviewed_by: session.userId,
+      reviewed_at: new Date().toISOString(),
+    })
+    .eq('id', id);
+  if (error) return { error: error.message };
+  revalidatePath('/admin');
+  return { ok: true };
+}
+
+export async function unmarkTipReviewedAction(
+  id: string,
+): Promise<ActionResult> {
+  await requireAdmin();
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase
+    .from('missing_person_tips')
+    .update({ reviewed: false, reviewed_by: null, reviewed_at: null })
+    .eq('id', id);
+  if (error) return { error: error.message };
+  revalidatePath('/admin');
+  return { ok: true };
+}
+
 // ---------- Donation channels ----------
 
 const ChannelSchema = z.object({

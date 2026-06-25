@@ -1,5 +1,10 @@
+'use client';
+
+import { useState, useTransition } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import type { Locale } from '@/lib/i18n';
+import { markTipReviewedAction } from './admin-actions';
 
 type RelPerson = { full_name: string } | { full_name: string }[] | null;
 
@@ -28,37 +33,69 @@ export function TipsFeed({ tips, locale }: { tips: Tip[]; locale: Locale }) {
       </h2>
       <p className="mt-1 text-xs text-red-800">
         {locale === 'es'
-          ? 'Personas que dicen tener información. Revísalos y contacta a quien reporta.'
-          : 'People who say they have information. Review and reach out to the reporter.'}
+          ? 'Personas que dicen tener información. Revísalos, contacta a quien reporta y marca como visto.'
+          : 'People who say they have information. Review, reach out to the reporter, then mark as seen.'}
       </p>
       <ul className="mt-3 space-y-2">
         {tips.map((tip) => (
-          <li key={tip.id} className="rounded-md border border-red-200 bg-white p-3">
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <p className="text-sm font-semibold">
-                {locale === 'es' ? 'Sobre:' : 'About:'}{' '}
-                <Link
-                  href={`/admin/desaparecidos/${tip.missing_person_id}`}
-                  className="text-[#254499] hover:underline"
-                >
-                  {pickPersonName(tip.missing_persons)}
-                </Link>
-              </p>
-              <span className="text-xs text-slate-500">
-                {new Date(tip.created_at).toLocaleString(locale === 'es' ? 'es-VE' : 'en-US')}
-              </span>
-            </div>
-            <p className="mt-2 text-sm">{tip.info}</p>
-            <p className="mt-2 text-xs text-slate-700">
-              <span className="font-medium">
-                {locale === 'es' ? 'Contacto' : 'Contact'}:
-              </span>{' '}
-              {tip.tip_giver_name ? `${tip.tip_giver_name} — ` : ''}
-              {tip.tip_giver_contact}
-            </p>
-          </li>
+          <TipRow key={tip.id} tip={tip} locale={locale} />
         ))}
       </ul>
     </section>
+  );
+}
+
+function TipRow({ tip, locale }: { tip: Tip; locale: Locale }) {
+  const router = useRouter();
+  const [pending, start] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+
+  function markReviewed() {
+    setError(null);
+    start(async () => {
+      const r = await markTipReviewedAction(tip.id);
+      if ('error' in r) setError(r.error);
+      else router.refresh();
+    });
+  }
+
+  return (
+    <li className="rounded-md border border-red-200 bg-white p-3">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <p className="text-sm font-semibold">
+          {locale === 'es' ? 'Sobre:' : 'About:'}{' '}
+          <Link
+            href={`/admin/desaparecidos/${tip.missing_person_id}`}
+            className="text-[#254499] hover:underline"
+          >
+            {pickPersonName(tip.missing_persons)}
+          </Link>
+        </p>
+        <span className="text-xs text-slate-500">
+          {new Date(tip.created_at).toLocaleString(locale === 'es' ? 'es-VE' : 'en-US')}
+        </span>
+      </div>
+      <p className="mt-2 text-sm">{tip.info}</p>
+      <p className="mt-2 text-xs text-slate-700">
+        <span className="font-medium">{locale === 'es' ? 'Contacto' : 'Contact'}:</span>{' '}
+        {tip.tip_giver_name ? `${tip.tip_giver_name} — ` : ''}
+        {tip.tip_giver_contact}
+      </p>
+      {error && (
+        <p className="mt-2 text-xs text-red-700">{error}</p>
+      )}
+      <div className="mt-2 flex justify-end">
+        <button
+          type="button"
+          onClick={markReviewed}
+          disabled={pending}
+          className="rounded border border-slate-300 bg-white px-3 py-1 text-xs font-medium hover:bg-slate-50 disabled:opacity-50"
+        >
+          {pending
+            ? '...'
+            : locale === 'es' ? '✓ Marcar como visto' : '✓ Mark as seen'}
+        </button>
+      </div>
+    </li>
   );
 }
