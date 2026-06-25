@@ -34,36 +34,38 @@ export default async function RootLayout({
         suppressHydrationWarning
       >
         <header className="border-b border-slate-200 bg-white">
-          <div className="mx-auto flex max-w-5xl items-center gap-3 px-3 py-2">
-            <Link
-              href="/"
-              className="flex-shrink-0 whitespace-nowrap text-sm font-bold text-[#254499] sm:text-base"
-            >
-              {tr.siteName}
-            </Link>
-            <nav className="-mx-1 flex flex-1 items-center gap-1.5 overflow-x-auto px-1 text-xs">
+          <div className="mx-auto max-w-5xl px-3 py-2">
+            {/* Row 1: brand + locale (always visible) */}
+            <div className="flex items-center justify-between gap-3">
+              <Link
+                href="/"
+                className="whitespace-nowrap text-sm font-bold text-[#254499] sm:text-base"
+              >
+                {tr.siteName}
+              </Link>
+              <LocaleToggle current={locale} />
+            </div>
+            {/* Row 2 on mobile / same row on desktop: nav pill buttons */}
+            <nav className="mt-2 flex flex-wrap items-center justify-center gap-1.5 text-xs sm:mt-0 sm:justify-end">
               <Link
                 href="/necesito-ayuda"
-                className="flex-shrink-0 whitespace-nowrap rounded-full bg-[#254499] px-3 py-1.5 font-semibold text-white hover:bg-[#1d3777]"
+                className="whitespace-nowrap rounded-full bg-[#254499] px-3 py-1.5 font-semibold text-white hover:bg-[#1d3777]"
               >
                 {tr.home.pathA}
               </Link>
               <Link
                 href="/donar"
-                className="flex-shrink-0 whitespace-nowrap rounded-full bg-[#254499] px-3 py-1.5 font-semibold text-white hover:bg-[#1d3777]"
+                className="whitespace-nowrap rounded-full bg-[#254499] px-3 py-1.5 font-semibold text-white hover:bg-[#1d3777]"
               >
                 {tr.home.pathB}
               </Link>
               <Link
                 href="/enviar"
-                className="flex-shrink-0 whitespace-nowrap rounded-full border border-slate-300 px-3 py-1.5 font-medium text-slate-700 hover:bg-slate-50"
+                className="whitespace-nowrap rounded-full border border-slate-300 px-3 py-1.5 font-medium text-slate-700 hover:bg-slate-50"
               >
                 {locale === 'es' ? 'Reportar' : 'Report'}
               </Link>
             </nav>
-            <div className="flex-shrink-0">
-              <LocaleToggle current={locale} />
-            </div>
           </div>
         </header>
         <main className="flex-1">{children}</main>
