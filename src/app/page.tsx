@@ -12,11 +12,17 @@ export default async function HomePage() {
   const supabase = await createSupabaseServerClient();
 
   // Live counts and last-updated, all from published rows only (RLS-safe).
-  const [centersAgg, missingAgg, channelsAgg, latestUpdate] = await Promise.all([
+  const [centersAgg, missingAgg, channelsAgg, latestUpdate, relatedSites] = await Promise.all([
     supabase.from('collection_centers').select('id', { count: 'exact', head: true }).eq('is_published', true),
     supabase.from('missing_persons').select('id', { count: 'exact', head: true }).eq('is_published', true).neq('status', 'closed'),
     supabase.from('donation_channels').select('id', { count: 'exact', head: true }).eq('is_published', true),
     supabase.from('collection_centers').select('updated_at').eq('is_published', true).order('updated_at', { ascending: false }).limit(1).maybeSingle(),
+    supabase.from('resource_links')
+      .select('id, title, description, url_or_contact')
+      .eq('is_published', true)
+      .eq('category', 'related_tool')
+      .order('sort_order', { ascending: true })
+      .limit(8),
   ]);
 
   const stats = {
@@ -106,6 +112,51 @@ export default async function HomePage() {
           {tr.about.whyBody}
         </p>
       </section>
+
+      {relatedSites.data && relatedSites.data.length > 0 && (
+        <section className="mt-10">
+          <h2 className="text-xl font-semibold text-[#111111]">
+            {locale === 'es' ? 'Sitios aliados y herramientas' : 'Partner sites & tools'}
+          </h2>
+          <p className="mt-2 text-sm text-slate-600">
+            {locale === 'es'
+              ? 'Otras plataformas verificadas que también están ayudando con búsquedas, mapas y registros.'
+              : 'Other verified platforms also helping with searches, maps and registries.'}
+          </p>
+          <ul className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {relatedSites.data.map((r) => (
+              <li key={r.id}>
+                {r.url_or_contact?.startsWith('http') ? (
+                  <a
+                    href={r.url_or_contact}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block rounded-lg border border-slate-300 p-3 hover:border-[#254499] hover:bg-slate-50"
+                  >
+                    <p className="text-sm font-semibold text-[#254499]">{r.title} ↗</p>
+                    {r.description && (
+                      <p className="mt-1 text-xs text-slate-600">{r.description}</p>
+                    )}
+                  </a>
+                ) : (
+                  <div className="block rounded-lg border border-slate-300 p-3">
+                    <p className="text-sm font-semibold">{r.title}</p>
+                    {r.description && (
+                      <p className="mt-1 text-xs text-slate-600">{r.description}</p>
+                    )}
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+          <Link
+            href="/recursos/related_tool"
+            className="mt-3 inline-block text-xs font-medium text-[#254499] hover:underline"
+          >
+            {locale === 'es' ? 'Ver todos →' : 'See all →'}
+          </Link>
+        </section>
+      )}
 
       <section className="mt-10">
         <h2 className="text-xl font-semibold text-[#111111]">

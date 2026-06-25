@@ -2,11 +2,10 @@ import Link from 'next/link';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { getLocale } from '@/lib/locale';
 import { t } from '@/lib/i18n';
-import { VENEZUELAN_STATES, type ResourceLink } from '@/lib/supabase/types';
-import { Filters } from './filters';
 
 export const dynamic = 'force-dynamic';
 
+// Order categories so the most-used ones are on top.
 const CATEGORY_ORDER = [
   'emergency',
   'hospital',
@@ -22,191 +21,94 @@ const CATEGORY_ORDER = [
   'skills_volunteering',
 ] as const;
 
-const CATEGORY_LABEL: Record<string, { es: string; en: string }> = {
-  emergency: { es: 'Emergencias', en: 'Emergency' },
-  official_app: { es: 'App oficial de reporte', en: 'Official damage-report app' },
-  hospital: { es: 'Hospitales', en: 'Hospitals' },
-  shelter: { es: 'Refugios oficiales', en: 'Official shelters' },
-  official_source: { es: 'Fuentes oficiales', en: 'Official sources' },
-  consular: { es: 'Ayuda consular', en: 'Consular help' },
-  evacuation: { es: 'Evacuación', en: 'Evacuation' },
-  family_tracing: { es: 'Búsqueda de familia', en: 'Family tracing' },
-  anti_scam: { es: 'Evita estafas', en: 'Avoid scams' },
-  in_kind_guidance: { es: 'Donaciones en especie', en: 'In-kind guidance' },
-  skills_volunteering: { es: 'Voluntariado profesional', en: 'Skills volunteering' },
-  related_tool: { es: 'Otros sitios y herramientas', en: 'Other sites and tools' },
+const CATEGORY_LABEL: Record<string, { es: string; en: string; descEs: string; descEn: string; icon: string }> = {
+  emergency: { es: 'Emergencias', en: 'Emergency', descEs: 'Bomberos, policía, civil, ambulancias y números de emergencia.', descEn: 'Fire, police, civil protection, ambulances and emergency numbers.', icon: '🚨' },
+  hospital: { es: 'Hospitales y clínicas', en: 'Hospitals & clinics', descEs: 'Atención médica pública y privada.', descEn: 'Public and private medical care.', icon: '🏥' },
+  shelter: { es: 'Refugios oficiales', en: 'Official shelters', descEs: 'Albergues y puntos de refugio temporales.', descEn: 'Temporary shelter locations.', icon: '🏠' },
+  related_tool: { es: 'Otros sitios y herramientas', en: 'Other sites & tools', descEs: 'Plataformas y registros aliados (búsqueda, mapas, registros hospitalarios).', descEn: 'Partner platforms and registries (search, maps, hospital lookups).', icon: '🔗' },
+  official_app: { es: 'App oficial de reporte', en: 'Official damage-report app', descEs: 'Aplicación oficial para reportar daños.', descEn: 'Official damage-report application.', icon: '📱' },
+  official_source: { es: 'Fuentes oficiales', en: 'Official sources', descEs: 'Comunicación oficial e información autorizada.', descEn: 'Official channels and authoritative information.', icon: '📢' },
+  consular: { es: 'Ayuda consular', en: 'Consular help', descEs: 'Apoyo consular por país, embajadas y emergencias.', descEn: 'Consular support by country, embassies and emergencies.', icon: '🛂' },
+  evacuation: { es: 'Evacuación', en: 'Evacuation', descEs: 'Rutas y apoyo de evacuación.', descEn: 'Evacuation routes and support.', icon: '🚐' },
+  family_tracing: { es: 'Búsqueda de familia', en: 'Family tracing', descEs: 'Cruz Roja Internacional y servicios de búsqueda.', descEn: 'ICRC and family-tracing services.', icon: '🔍' },
+  anti_scam: { es: 'Evita estafas', en: 'Avoid scams', descEs: 'Cómo reconocer recaudaciones falsas.', descEn: 'How to spot fake fundraisers.', icon: '⚠️' },
+  in_kind_guidance: { es: 'Donaciones en especie', en: 'In-kind guidance', descEs: 'Qué donar y cómo enviarlo.', descEn: 'What to donate and how to send it.', icon: '📦' },
+  skills_volunteering: { es: 'Voluntariado profesional', en: 'Skills volunteering', descEs: 'Apoyo psicológico, traducción, mapeo de crisis.', descEn: 'Psychological support, translation, crisis mapping.', icon: '🤝' },
 };
 
-type Params = {
-  scope?: string;
-  state?: string;
-  country?: string;
-  category?: string;
-  q?: string;
-};
-
-export default async function RecursosPage({
-  searchParams,
-}: {
-  searchParams: Promise<Params>;
-}) {
-  const { scope, state, country, category, q } = await searchParams;
-  const isDiaspora = scope === 'diaspora';
-
+export default async function RecursosPage() {
   const locale = await getLocale();
   const tr = t(locale);
   const supabase = await createSupabaseServerClient();
 
-  let query = supabase
+  // Count items per category so each card can show how many are in there.
+  const { data: rows } = await supabase
     .from('resource_links')
-    .select('id, category, title, description, url_or_contact, country, state, sort_order')
-    .eq('is_published', true)
-    .order('sort_order', { ascending: true })
-    .order('title', { ascending: true });
+    .select('category')
+    .eq('is_published', true);
 
-  if (isDiaspora) {
-    // Diaspora resources: anything tagged with a country (e.g. ICRC Cruz Roja
-    // by country, or consular help).
-    query = query.not('country', 'is', null);
-    if (country) query = query.eq('country', country);
-  } else {
-    // Inside Venezuela: country is null OR explicitly 'VE'.
-    query = query.or('country.is.null,country.eq.VE');
-    if (state && (VENEZUELAN_STATES as readonly string[]).includes(state)) {
-      query = query.eq('state', state);
-    }
-  }
-  if (category) {
-    query = query.eq('category', category);
-  }
-  if (q && q.trim()) {
-    const safe = q.trim().replace(/[%,]/g, '');
-    query = query.or(`title.ilike.%${safe}%,description.ilike.%${safe}%`);
+  const counts = new Map<string, number>();
+  for (const r of rows ?? []) {
+    counts.set(r.category, (counts.get(r.category) ?? 0) + 1);
   }
 
-  const { data: links } = await query;
-
-  const byCategory = new Map<string, ResourceLink[]>();
-  for (const l of links ?? []) {
-    if (!byCategory.has(l.category)) byCategory.set(l.category, []);
-    byCategory.get(l.category)!.push(l as ResourceLink);
-  }
-
+  // Categories present in the data, sorted by our preferred order, then anything custom.
   const orderedCategories = [
-    ...CATEGORY_ORDER.filter((c) => byCategory.has(c)),
-    ...[...byCategory.keys()].filter((c) => !CATEGORY_ORDER.includes(c as never)),
+    ...CATEGORY_ORDER.filter((c) => counts.has(c)),
+    ...[...counts.keys()].filter((c) => !CATEGORY_ORDER.includes(c as never)),
   ];
-
-  // Build country list for the diaspora filter from what's actually in the data,
-  // so the dropdown only shows countries we have resources for.
-  const availableCountries = isDiaspora
-    ? [...new Set((links ?? []).map((l) => l.country).filter((c): c is string => !!c))].sort()
-    : [];
-
-  const total = links?.length ?? 0;
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
       <h1 className="text-2xl font-semibold">{tr.resources.title}</h1>
+      <p className="mt-1 text-sm text-slate-600">
+        {locale === 'es'
+          ? 'Toca cualquier categoría para ver los contactos y enlaces. Cada lista es buscable.'
+          : 'Tap any category to see contacts and links. Each list is searchable.'}
+      </p>
 
-      {/* Scope toggle: inside Venezuela vs diaspora */}
-      <div className="mt-4 inline-flex rounded-lg border border-slate-300 bg-white p-1">
-        <Link
-          href={`/recursos${category ? `?category=${category}` : ''}`}
-          className={`rounded-md px-3 py-1.5 text-xs font-medium ${!isDiaspora ? 'bg-[#254499] text-white' : 'text-slate-700'}`}
-        >
-          🇻🇪 {locale === 'es' ? 'En Venezuela' : 'Inside Venezuela'}
-        </Link>
-        <Link
-          href={`/recursos?scope=diaspora${category ? `&category=${category}` : ''}`}
-          className={`rounded-md px-3 py-1.5 text-xs font-medium ${isDiaspora ? 'bg-[#254499] text-white' : 'text-slate-700'}`}
-        >
-          🌎 {locale === 'es' ? 'Diáspora' : 'Diaspora'}
-        </Link>
-      </div>
-
-      <Filters
-        currentScope={isDiaspora ? 'diaspora' : 'inside'}
-        currentState={state}
-        currentCountry={country}
-        currentCategory={category}
-        currentQ={q}
-        availableCountries={availableCountries}
-        categoryOptions={Object.entries(CATEGORY_LABEL).map(([value, label]) => ({
-          value,
-          label: label[locale],
-        }))}
-        locale={locale}
-      />
-
-      {/* Quick jump anchors */}
-      {orderedCategories.length > 1 && (
-        <div className="mt-4 flex flex-wrap gap-1.5 text-xs">
-          {orderedCategories.map((cat) => {
-            const count = byCategory.get(cat)?.length ?? 0;
-            const label = CATEGORY_LABEL[cat]?.[locale] ?? cat;
-            return (
-              <a
-                key={cat}
-                href={`#cat-${cat}`}
-                className="rounded-full border border-slate-300 px-3 py-1 text-slate-700 hover:bg-slate-50"
+      <ul className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {orderedCategories.map((cat) => {
+          const meta = CATEGORY_LABEL[cat] ?? null;
+          const count = counts.get(cat) ?? 0;
+          const label = meta ? (locale === 'es' ? meta.es : meta.en) : cat;
+          const desc = meta ? (locale === 'es' ? meta.descEs : meta.descEn) : '';
+          return (
+            <li key={cat}>
+              <Link
+                href={`/recursos/${cat}`}
+                className="group flex h-full flex-col rounded-xl border-2 border-[#254499] bg-white p-5 transition hover:bg-[#254499] hover:text-white"
               >
-                {label} <span className="text-slate-400">({count})</span>
-              </a>
-            );
-          })}
-        </div>
-      )}
+                <div className="flex items-start justify-between gap-2">
+                  <h2 className="text-lg font-semibold">
+                    {meta?.icon && <span className="mr-2">{meta.icon}</span>}
+                    {label}
+                  </h2>
+                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700 group-hover:bg-white group-hover:text-[#254499]">
+                    {count}
+                  </span>
+                </div>
+                {desc && (
+                  <p className="mt-2 text-sm text-slate-600 group-hover:text-white/90">
+                    {desc}
+                  </p>
+                )}
+                <p className="mt-3 text-xs font-semibold text-[#254499] group-hover:text-white">
+                  {locale === 'es' ? 'Ver →' : 'View →'}
+                </p>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
 
-      {total === 0 && (
+      {orderedCategories.length === 0 && (
         <p className="mt-6 rounded-lg border border-dashed border-slate-300 px-4 py-10 text-center text-sm text-slate-500">
           {locale === 'es'
-            ? 'No hay recursos para esta selección.'
-            : 'No resources match this selection.'}
+            ? 'Aún no hay recursos publicados.'
+            : 'No resources published yet.'}
         </p>
       )}
-
-      {orderedCategories.map((cat) => {
-        const items = byCategory.get(cat) ?? [];
-        const label = CATEGORY_LABEL[cat]?.[locale] ?? cat;
-        return (
-          <section key={cat} id={`cat-${cat}`} className="mt-8 scroll-mt-4">
-            <h2 className="text-lg font-semibold">
-              {label}{' '}
-              <span className="text-sm font-normal text-slate-500">({items.length})</span>
-            </h2>
-            <ul className="mt-2 divide-y divide-slate-200 rounded-lg border border-slate-200">
-              {items.map((l) => (
-                <li key={l.id} className="px-4 py-3">
-                  <p className="text-sm font-medium">{l.title}</p>
-                  {l.description && <p className="mt-1 text-xs text-slate-600">{l.description}</p>}
-                  {l.url_or_contact && (
-                    <p className="mt-1 text-xs">
-                      {l.url_or_contact.startsWith('http') ? (
-                        <a
-                          href={l.url_or_contact}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[#254499] hover:underline"
-                        >
-                          {l.url_or_contact}
-                        </a>
-                      ) : (
-                        <span className="text-slate-700">{l.url_or_contact}</span>
-                      )}
-                    </p>
-                  )}
-                  {(l.country || l.state) && (
-                    <p className="mt-1 text-xs uppercase tracking-wide text-slate-500">
-                      {[l.country, l.state].filter(Boolean).join(' · ')}
-                    </p>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </section>
-        );
-      })}
     </div>
   );
 }

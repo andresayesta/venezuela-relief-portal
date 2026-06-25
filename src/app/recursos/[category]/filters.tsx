@@ -2,29 +2,25 @@
 
 import { useRouter, usePathname } from 'next/navigation';
 import { useState, useTransition } from 'react';
-import { VENEZUELAN_STATES } from '@/lib/supabase/types';
-import { t, type Locale } from '@/lib/i18n';
+import type { Locale } from '@/lib/i18n';
 
-export function Filters({
-  currentScope,
+export function CategoryFilters({
+  category,
   currentState,
   currentCountry,
-  currentCategory,
   currentQ,
+  availableStates,
   availableCountries,
-  categoryOptions,
   locale,
 }: {
-  currentScope: 'inside' | 'diaspora';
+  category: string;
   currentState?: string;
   currentCountry?: string;
-  currentCategory?: string;
   currentQ?: string;
+  availableStates: string[];
   availableCountries: string[];
-  categoryOptions: { value: string; label: string }[];
   locale: Locale;
 }) {
-  const tr = t(locale);
   const router = useRouter();
   const pathname = usePathname();
   const [pending, start] = useTransition();
@@ -33,10 +29,8 @@ export function Filters({
   function update(patch: Record<string, string | undefined>) {
     const params = new URLSearchParams();
     const merged: Record<string, string | undefined> = {
-      scope: currentScope === 'diaspora' ? 'diaspora' : undefined,
       state: currentState,
       country: currentCountry,
-      category: currentCategory,
       q: q || undefined,
       ...patch,
     };
@@ -46,12 +40,11 @@ export function Filters({
     start(() => router.push(`${pathname}?${params.toString()}`));
   }
 
-  const inDiaspora = currentScope === 'diaspora';
-  const hasAnyFilter =
-    !!currentState || !!currentCountry || !!currentCategory || !!currentQ;
+  const hasAnyFilter = !!currentState || !!currentCountry || !!currentQ;
+  void category;
 
   return (
-    <div className="mt-3 space-y-2">
+    <div className="mt-4 space-y-2">
       <input
         type="search"
         value={q}
@@ -63,17 +56,19 @@ export function Filters({
         className="w-full rounded border border-slate-300 px-3 py-2 text-base"
       />
       <div className="flex flex-wrap gap-2">
-        <select
-          value={currentCategory ?? ''}
-          onChange={(e) => update({ category: e.target.value || undefined })}
-          className="rounded border border-slate-300 bg-white px-3 py-2 text-sm"
-        >
-          <option value="">{locale === 'es' ? 'Tipo: Todos' : 'Type: All'}</option>
-          {categoryOptions.map((c) => (
-            <option key={c.value} value={c.value}>{c.label}</option>
-          ))}
-        </select>
-        {inDiaspora ? (
+        {availableStates.length > 0 && (
+          <select
+            value={currentState ?? ''}
+            onChange={(e) => update({ state: e.target.value || undefined })}
+            className="rounded border border-slate-300 bg-white px-3 py-2 text-sm"
+          >
+            <option value="">{locale === 'es' ? 'Estado: Todos' : 'State: All'}</option>
+            {availableStates.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+        )}
+        {availableCountries.length > 0 && (
           <select
             value={currentCountry ?? ''}
             onChange={(e) => update({ country: e.target.value || undefined })}
@@ -84,29 +79,17 @@ export function Filters({
               <option key={c} value={c}>{c}</option>
             ))}
           </select>
-        ) : (
-          <select
-            value={currentState ?? ''}
-            onChange={(e) => update({ state: e.target.value || undefined })}
-            className="rounded border border-slate-300 bg-white px-3 py-2 text-sm"
-          >
-            <option value="">{locale === 'es' ? 'Estado: Todos' : 'State: All'}</option>
-            {VENEZUELAN_STATES.map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
         )}
         {hasAnyFilter && (
           <button
             onClick={() => {
               setQ('');
-              const base = inDiaspora ? `${pathname}?scope=diaspora` : pathname;
-              start(() => router.push(base));
+              start(() => router.push(pathname));
             }}
             disabled={pending}
             className="rounded border border-slate-300 px-3 py-2 text-sm"
           >
-            {tr.common.cancel}
+            {locale === 'es' ? 'Limpiar' : 'Clear'}
           </button>
         )}
       </div>
