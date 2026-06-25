@@ -62,22 +62,22 @@ export default async function RootLayout({
             <div className="order-2 ml-auto sm:order-3 sm:ml-0">
               <LocaleToggle current={locale} />
             </div>
-            <nav className="order-3 flex w-full flex-wrap items-center justify-center gap-1.5 text-xs sm:order-2 sm:w-auto sm:flex-1 sm:justify-end">
+            <nav className="order-3 grid w-full grid-cols-3 gap-1.5 text-sm sm:order-2 sm:flex sm:w-auto sm:flex-1 sm:justify-end sm:text-xs">
               <Link
                 href="/necesito-ayuda"
-                className="whitespace-nowrap rounded-full bg-[#254499] px-3 py-1.5 font-semibold text-white hover:bg-[#1d3777]"
+                className="rounded-full bg-[#254499] px-3 py-2.5 text-center font-semibold text-white hover:bg-[#1d3777] sm:py-1.5"
               >
                 {tr.home.pathA}
               </Link>
               <Link
                 href="/donar"
-                className="whitespace-nowrap rounded-full bg-[#254499] px-3 py-1.5 font-semibold text-white hover:bg-[#1d3777]"
+                className="rounded-full bg-[#254499] px-3 py-2.5 text-center font-semibold text-white hover:bg-[#1d3777] sm:py-1.5"
               >
                 {tr.home.pathB}
               </Link>
               <Link
                 href="/enviar"
-                className="whitespace-nowrap rounded-full border border-slate-300 px-3 py-1.5 font-medium text-slate-700 hover:bg-slate-50"
+                className="rounded-full border border-slate-300 px-3 py-2.5 text-center font-medium text-slate-700 hover:bg-slate-50 sm:py-1.5"
               >
                 {locale === 'es' ? 'Reportar' : 'Report'}
               </Link>
