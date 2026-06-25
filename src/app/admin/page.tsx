@@ -23,12 +23,12 @@ export default async function AdminDashboard() {
   ] = await Promise.all([
     supabase
       .from('collection_centers')
-      .select('id, name, state, direction, trust_tier, created_at, created_by, profiles:created_by(full_name)')
+      .select('id, name, state, direction, trust_tier, created_at, created_by, submitted_by, profiles:created_by(full_name)')
       .eq('is_published', false)
       .order('created_at', { ascending: false }),
     supabase
       .from('missing_persons')
-      .select('id, full_name, last_seen_state, trust_tier, created_at, created_by, profiles:created_by(full_name)')
+      .select('id, full_name, last_seen_state, trust_tier, created_at, created_by, submitted_by, profiles:created_by(full_name)')
       .eq('is_published', false)
       .order('created_at', { ascending: false }),
     supabase

@@ -21,6 +21,7 @@ export type PendingCenter = {
   trust_tier: TrustTier;
   created_at: string;
   profiles: RelProfile;
+  submitted_by?: string | null;
 };
 
 export type PendingMissing = {
@@ -30,6 +31,7 @@ export type PendingMissing = {
   trust_tier: TrustTier;
   created_at: string;
   profiles: RelProfile;
+  submitted_by?: string | null;
 };
 
 function pickName(p: RelProfile): string | null {
@@ -67,6 +69,7 @@ export function PendingQueue({
             title={c.name}
             subtitle={`${c.state} · ${c.direction === 'dropoff' ? '↓' : '↑'}`}
             addedBy={pickName(c.profiles) ?? '—'}
+            isPublic={!!c.submitted_by}
             trustTier={c.trust_tier}
             editHref={`/admin/centros/${c.id}`}
             role={role}
@@ -81,6 +84,7 @@ export function PendingQueue({
             title={m.full_name}
             subtitle={m.last_seen_state ?? '—'}
             addedBy={pickName(m.profiles) ?? '—'}
+            isPublic={!!m.submitted_by}
             trustTier={m.trust_tier}
             editHref={`/admin/desaparecidos/${m.id}`}
             role={role}
@@ -103,6 +107,7 @@ function Row({
   title,
   subtitle,
   addedBy,
+  isPublic,
   trustTier,
   editHref,
   role,
@@ -113,6 +118,7 @@ function Row({
   title: string;
   subtitle: string;
   addedBy: string;
+  isPublic: boolean;
   trustTier: TrustTier;
   editHref: string;
   role: UserRole;
@@ -148,6 +154,11 @@ function Row({
         {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
       </div>
       <div className="flex items-center gap-2">
+        {isPublic && (
+          <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-900">
+            📥 {locale === 'es' ? 'Pública' : 'Public'}
+          </span>
+        )}
         <TrustBadge tier={trustTier} locale={locale} />
         {role === 'admin' && (
           <button

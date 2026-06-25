@@ -5,6 +5,7 @@ import { getLocale } from '@/lib/locale';
 import { t } from '@/lib/i18n';
 import { ResourceForm } from '../resource-form';
 import { updateResourceAction, deleteResourceAction } from '../../admin-actions';
+import { DiligenceChecklist } from '@/components/DiligenceChecklist';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,6 +34,8 @@ export default async function EditResourcePage({
   return (
     <div className="mx-auto max-w-2xl px-4 py-6">
       <h1 className="text-xl font-semibold">{resource.title}</h1>
+      <DiligenceChecklist kind="resource" locale={locale} />
+
       <div className="mt-6">
         <ResourceForm
           initial={resource}

@@ -5,6 +5,7 @@ import { getLocale } from '@/lib/locale';
 import { t } from '@/lib/i18n';
 import { ChannelForm } from '../channel-form';
 import { updateChannelAction, deleteChannelAction } from '../../admin-actions';
+import { DiligenceChecklist } from '@/components/DiligenceChecklist';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,6 +34,8 @@ export default async function EditChannelPage({
   return (
     <div className="mx-auto max-w-2xl px-4 py-6">
       <h1 className="text-xl font-semibold">{channel.name}</h1>
+      <DiligenceChecklist kind="channel" locale={locale} />
+
       <div className="mt-6">
         <ChannelForm
           initial={channel}

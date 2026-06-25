@@ -6,6 +6,7 @@ import { t } from '@/lib/i18n';
 import { MissingForm } from '../missing-form';
 import { updateMissingAction, deleteMissingAction } from '../../admin-actions';
 import { TipsList } from './tips-list';
+import { DiligenceChecklist } from '@/components/DiligenceChecklist';
 
 export const dynamic = 'force-dynamic';
 
@@ -52,6 +53,8 @@ export default async function EditMissingPage({
       {tips && tips.length > 0 && (
         <TipsList tips={tips} locale={locale} />
       )}
+
+      <DiligenceChecklist kind="missing" locale={locale} />
 
       <div className="mt-6">
         <MissingForm

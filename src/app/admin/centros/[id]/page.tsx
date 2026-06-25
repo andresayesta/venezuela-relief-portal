@@ -5,6 +5,7 @@ import { getLocale } from '@/lib/locale';
 import { t } from '@/lib/i18n';
 import { CenterForm } from '../center-form';
 import { updateCenterAction, deleteCenterAction } from '../../admin-actions';
+import { DiligenceChecklist } from '@/components/DiligenceChecklist';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,6 +46,8 @@ export default async function EditCenterPage({
           ? locale === 'es' ? 'Publicado' : 'Published'
           : locale === 'es' ? 'No publicado' : 'Unpublished'}
       </p>
+      <DiligenceChecklist kind="center" locale={locale} />
+
       <div className="mt-6">
         <CenterForm
           initial={center}

@@ -48,6 +48,9 @@ export default async function RootLayout({
               <Link href="/verificado" className="hover:text-slate-700">
                 {tr.nav.verified}
               </Link>
+              <Link href="/enviar" className="hover:text-slate-700">
+                {locale === 'es' ? 'Enviar info' : 'Submit info'}
+              </Link>
               <LocaleToggle current={locale} />
             </nav>
           </div>
