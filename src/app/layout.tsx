@@ -46,13 +46,13 @@ export default async function RootLayout({
                 href="/necesito-ayuda"
                 className="flex-shrink-0 whitespace-nowrap rounded-full bg-[#254499] px-3 py-1.5 font-semibold text-white hover:bg-[#1d3777]"
               >
-                A · {tr.home.pathA}
+                {tr.home.pathA}
               </Link>
               <Link
                 href="/donar"
                 className="flex-shrink-0 whitespace-nowrap rounded-full bg-[#254499] px-3 py-1.5 font-semibold text-white hover:bg-[#1d3777]"
               >
-                B · {tr.home.pathB}
+                {tr.home.pathB}
               </Link>
               <Link
                 href="/verificado"
@@ -64,7 +64,7 @@ export default async function RootLayout({
                 href="/enviar"
                 className="flex-shrink-0 whitespace-nowrap rounded-full border border-slate-300 px-3 py-1.5 font-medium text-slate-700 hover:bg-slate-50"
               >
-                {locale === 'es' ? 'Enviar' : 'Submit'}
+                {locale === 'es' ? 'Reportar' : 'Report'}
               </Link>
             </nav>
             <div className="flex-shrink-0">

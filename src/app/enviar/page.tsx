@@ -7,7 +7,7 @@ export default async function EnviarIndex() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
       <h1 className="text-2xl font-semibold">
-        {locale === 'es' ? 'Enviar información' : 'Submit information'}
+        {locale === 'es' ? 'Reportar información' : 'Report information'}
       </h1>
       <p className="mt-1 text-sm text-slate-600">
         {locale === 'es'
