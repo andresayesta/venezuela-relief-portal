@@ -3,7 +3,6 @@ import { requireTeam } from '@/lib/admin-auth';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { getLocale } from '@/lib/locale';
 import { t } from '@/lib/i18n';
-import { signOutAction } from './actions';
 import { PendingQueue } from './pending-queue';
 import { TipsFeed } from './tips-feed';
 
@@ -42,22 +41,15 @@ export default async function AdminDashboard() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold">{tr.admin.dashboard}</h1>
-          <p className="text-sm text-slate-600">
-            {session.profile.full_name ?? session.email}
-            {' · '}
-            <span className="uppercase tracking-wide text-slate-500">
-              {session.profile.role}
-            </span>
-          </p>
-        </div>
-        <form action={signOutAction}>
-          <button className="text-sm text-slate-600 hover:text-slate-900">
-            {tr.admin.signOut}
-          </button>
-        </form>
+      <div>
+        <h1 className="text-xl font-semibold">{tr.admin.dashboard}</h1>
+        <p className="text-sm text-slate-600">
+          {session.profile.full_name ?? session.email}
+          {' · '}
+          <span className="uppercase tracking-wide text-slate-500">
+            {session.profile.role}
+          </span>
+        </p>
       </div>
 
       {/* Primary daily workflow */}
@@ -78,9 +70,9 @@ export default async function AdminDashboard() {
         />
       </div>
 
-      {/* Admin-only sections */}
+      {/* Admin-only sections (Equipo moved to the top nav) */}
       {session.profile.role === 'admin' && (
-        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
           <SectionCard
             href="/admin/canales"
             title={tr.admin.manageChannels}
@@ -91,12 +83,6 @@ export default async function AdminDashboard() {
             href="/admin/recursos"
             title={tr.admin.manageResources}
             desc={locale === 'es' ? 'Emergencias, refugios, etc.' : 'Emergency, shelters, etc.'}
-            compact
-          />
-          <SectionCard
-            href="/admin/equipo"
-            title={tr.admin.team}
-            desc={locale === 'es' ? 'Miembros del equipo.' : 'Team members.'}
             compact
           />
         </div>
