@@ -41,6 +41,9 @@ export default async function AdminLayout({
               <Link href="/admin" className="font-semibold text-slate-900 hover:text-[#254499]">
                 {tr.admin.dashboard}
               </Link>
+              <Link href="/admin/quick-add" className="rounded-full bg-[#254499] px-2.5 py-0.5 text-xs font-semibold text-white hover:bg-[#1d3777]">
+                ✨ {locale === 'es' ? 'Añadir URL' : 'Add URL'}
+              </Link>
               <Link href="/admin/centros" className="text-slate-700 hover:text-[#254499]">
                 {tr.admin.manageCenters}
               </Link>
