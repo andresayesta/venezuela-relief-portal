@@ -34,19 +34,17 @@ export default async function RootLayout({
         suppressHydrationWarning
       >
         <header className="border-b border-slate-200 bg-white">
-          <div className="mx-auto max-w-5xl px-3 py-2">
-            {/* Row 1: brand + locale (always visible) */}
-            <div className="flex items-center justify-between gap-3">
-              <Link
-                href="/"
-                className="whitespace-nowrap text-sm font-bold text-[#254499] sm:text-base"
-              >
-                {tr.siteName}
-              </Link>
+          <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-3 px-3 py-2">
+            <Link
+              href="/"
+              className="order-1 flex-shrink-0 whitespace-nowrap text-sm font-bold text-[#254499] sm:text-base"
+            >
+              {tr.siteName}
+            </Link>
+            <div className="order-2 ml-auto sm:order-3 sm:ml-0">
               <LocaleToggle current={locale} />
             </div>
-            {/* Row 2 on mobile / same row on desktop: nav pill buttons */}
-            <nav className="mt-2 flex flex-wrap items-center justify-center gap-1.5 text-xs sm:mt-0 sm:justify-end">
+            <nav className="order-3 flex w-full flex-wrap items-center justify-center gap-1.5 text-xs sm:order-2 sm:w-auto sm:flex-1 sm:justify-end">
               <Link
                 href="/necesito-ayuda"
                 className="whitespace-nowrap rounded-full bg-[#254499] px-3 py-1.5 font-semibold text-white hover:bg-[#1d3777]"
