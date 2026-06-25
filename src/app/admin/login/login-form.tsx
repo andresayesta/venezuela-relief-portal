@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser';
 import type { Dict } from '@/lib/i18n';
@@ -73,6 +74,11 @@ export function LoginForm({
       >
         {loading ? '...' : tr.login}
       </button>
+      <p className="text-center text-xs">
+        <Link href="/admin/forgot-password" className="text-slate-500 hover:text-slate-900">
+          {locale === 'es' ? '¿Olvidaste tu contraseña?' : 'Forgot password?'}
+        </Link>
+      </p>
     </form>
   );
 }

@@ -6,7 +6,7 @@ import { anthropic } from '@ai-sdk/anthropic';
 import { requireTeam } from '@/lib/admin-auth';
 import { VENEZUELAN_STATES } from '@/lib/supabase/types';
 
-const ExtractedMissingSchema = z.object({
+const ExtractedPersonSchema = z.object({
   full_name: z.string().nullable().describe("Person's full name."),
   age: z.number().int().min(0).max(120).nullable().describe('Age in years.'),
   last_seen_location: z.string().nullable().describe('Specific place last seen.'),
@@ -16,25 +16,30 @@ const ExtractedMissingSchema = z.object({
     .regex(/^\d{4}-\d{2}-\d{2}$/)
     .nullable()
     .describe('YYYY-MM-DD if an explicit date is given. Null for relative phrases.'),
-  description: z
+  description: z.string().nullable().describe('Distinguishing features, clothing, height.'),
+  relationship: z
     .string()
     .nullable()
-    .describe('Distinguishing features, clothing last worn, height, complexion.'),
+    .describe("This person's relationship to the reporter."),
+});
+
+const ExtractedGroupSchema = z.object({
+  persons: z
+    .array(ExtractedPersonSchema)
+    .min(1)
+    .describe('One entry per person mentioned in the post. If a single post lists multiple missing people (a family, for example), return all of them as separate entries.'),
   reporter_name: z.string().nullable().describe('Name of the person publishing the post.'),
   reporter_contact: z
     .string()
     .nullable()
     .describe('Phone, email, or @handle to contact with information.'),
-  relationship: z
-    .string()
-    .nullable()
-    .describe("Reporter's relationship to the missing person."),
 });
 
-export type ExtractedMissing = z.infer<typeof ExtractedMissingSchema>;
+export type ExtractedPerson = z.infer<typeof ExtractedPersonSchema>;
+export type ExtractedGroup = z.infer<typeof ExtractedGroupSchema>;
 
 export type ExtractMissingResult =
-  | { data: ExtractedMissing }
+  | { data: ExtractedGroup }
   | { error: string };
 
 export async function extractMissingFromImage(
@@ -55,20 +60,22 @@ export async function extractMissingFromImage(
   try {
     const { output: extracted } = await generateText({
       model: anthropic('claude-haiku-4-5'),
-      output: Output.object({ schema: ExtractedMissingSchema }),
+      output: Output.object({ schema: ExtractedGroupSchema }),
       instructions: [
-        'You extract structured info about a missing person from a screenshot of a social media post (WhatsApp, Instagram, X/Twitter, Facebook) or a missing-person flyer.',
-        'The post is usually in Spanish, about someone missing after the June 2026 Venezuela earthquakes.',
+        'You extract structured info about missing persons from a screenshot of a social-media post or a missing-person flyer.',
+        'The post is usually in Spanish, about people missing after the June 2026 Venezuela earthquakes.',
+        'A single post may list one person OR multiple people (e.g. an entire family). Return every distinct missing person as a separate entry in the persons array.',
         'Return only fields you can read with high confidence. Use null for anything missing.',
         'Normalize last_seen_state to one of the canonical Venezuelan states.',
-        'For reporter_contact preserve the phone digits, email, or @handle exactly as shown.',
+        'For reporter_contact preserve phone digits, email, or @handle exactly as shown.',
         'For last_seen_date, only return YYYY-MM-DD if an explicit date appears. Skip relative phrases ("ayer", "el sábado").',
+        'If a person has individual details (own age, own clothing, own last-seen location), put those on their own entry. Shared context (a family was last seen together at one address) should be repeated on each entry.',
       ].join(' '),
       messages: [
         {
           role: 'user',
           content: [
-            { type: 'text', text: 'Extract missing-person details from this image.' },
+            { type: 'text', text: 'Extract every missing person from this image.' },
             { type: 'file', mediaType: 'image', data: { type: 'url', url } },
           ],
         },

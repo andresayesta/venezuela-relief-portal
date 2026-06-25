@@ -107,6 +107,7 @@ export type MissingPerson = {
   source: string | null;
   consent_to_publish: boolean;
   is_published: boolean;
+  family_group_id: string | null;
   submitted_by: string | null;
   created_by: string | null;
   published_by: string | null;

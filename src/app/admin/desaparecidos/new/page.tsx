@@ -1,8 +1,7 @@
 import { requireTeam } from '@/lib/admin-auth';
 import { getLocale } from '@/lib/locale';
 import { t } from '@/lib/i18n';
-import { MissingForm } from '../missing-form';
-import { createMissingAction } from '../../admin-actions';
+import { MultiMissingForm } from '../multi-form';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,14 +15,13 @@ export default async function NewMissingPage() {
       <h1 className="text-xl font-semibold">{tr.admin.addMissing}</h1>
       <p className="mt-1 text-sm text-slate-600">
         {locale === 'es'
-          ? 'Sube la captura del post para que la IA llene los campos. Marca el consentimiento solo si el reportante lo autorizó.'
-          : 'Upload the post screenshot so the AI fills the fields. Check consent only if the reporter authorized it.'}
+          ? 'Sube la captura del post. Si la imagen tiene varias personas (p.ej. una familia), todas quedarán vinculadas al mismo grupo y se podrán mostrar juntas en el sitio público.'
+          : 'Upload the post screenshot. If it lists multiple people (e.g. a family), all are linked as one group and shown together publicly.'}
       </p>
       <div className="mt-6">
-        <MissingForm
+        <MultiMissingForm
           isAdmin={session.profile.role === 'admin'}
           locale={locale}
-          onSubmit={createMissingAction}
         />
       </div>
     </div>

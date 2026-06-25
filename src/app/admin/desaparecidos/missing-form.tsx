@@ -6,10 +6,11 @@ import { VENEZUELAN_STATES, type MissingPerson } from '@/lib/supabase/types';
 import { t, type Locale } from '@/lib/i18n';
 import type { ActionResult } from '../admin-actions';
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser';
-import { extractMissingFromImage, type ExtractedMissing } from './ai-extract-missing';
 
 type Initial = Partial<MissingPerson>;
 
+// Single-person edit form. The new-person flow lives in multi-form.tsx
+// (handles AI extraction and family groups).
 export function MissingForm({
   initial,
   isAdmin,
@@ -34,60 +35,24 @@ export function MissingForm({
   const [uploading, setUploading] = useState(false);
   const [consent, setConsent] = useState<boolean>(initial?.consent_to_publish ?? false);
 
-  // Intake screenshot for AI extraction — NOT persisted to the row.
-  const [intakeScreenshotUrl, setIntakeScreenshotUrl] = useState<string | null>(null);
-  const [uploadingScreenshot, setUploadingScreenshot] = useState(false);
-  const [autofill, setAutofill] = useState<ExtractedMissing | null>(null);
-  const [extracting, setExtracting] = useState(false);
-
-  async function uploadToMissingPhotos(
-    file: File,
-  ): Promise<{ url: string } | { error: string }> {
-    const supabase = createSupabaseBrowserClient();
-    const ext = file.name.split('.').pop() ?? 'jpg';
-    const path = `${crypto.randomUUID()}.${ext}`;
-    const { error: upErr } = await supabase.storage
-      .from('missing-photos')
-      .upload(path, file, { upsert: false, contentType: file.type });
-    if (upErr) return { error: upErr.message };
-    const { data: pub } = supabase.storage.from('missing-photos').getPublicUrl(path);
-    return { url: pub.publicUrl };
-  }
-
   async function handleUpload(file: File) {
     setError(null);
     setUploading(true);
     try {
-      const r = await uploadToMissingPhotos(file);
-      if ('error' in r) setError(r.error);
-      else setPhotoUrl(r.url);
+      const supabase = createSupabaseBrowserClient();
+      const ext = file.name.split('.').pop() ?? 'jpg';
+      const path = `${crypto.randomUUID()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from('missing-photos')
+        .upload(path, file, { upsert: false, contentType: file.type });
+      if (upErr) {
+        setError(upErr.message);
+        return;
+      }
+      const { data: pub } = supabase.storage.from('missing-photos').getPublicUrl(path);
+      setPhotoUrl(pub.publicUrl);
     } finally {
       setUploading(false);
-    }
-  }
-
-  async function handleScreenshotUpload(file: File) {
-    setError(null);
-    setUploadingScreenshot(true);
-    try {
-      const r = await uploadToMissingPhotos(file);
-      if ('error' in r) setError(r.error);
-      else setIntakeScreenshotUrl(r.url);
-    } finally {
-      setUploadingScreenshot(false);
-    }
-  }
-
-  async function handleExtract() {
-    if (!intakeScreenshotUrl) return;
-    setError(null);
-    setExtracting(true);
-    try {
-      const result = await extractMissingFromImage(intakeScreenshotUrl);
-      if ('error' in result) setError(result.error);
-      else setAutofill(result.data);
-    } finally {
-      setExtracting(false);
     }
   }
 
@@ -112,78 +77,16 @@ export function MissingForm({
 
   return (
     <form className="space-y-5" onSubmit={submit(false)}>
-      {/* Intake screenshot + AI extract — NOT saved as the person photo. */}
-      <section className="rounded-lg border border-dashed border-slate-300 p-3">
-        <p className="text-xs font-medium uppercase tracking-wide text-slate-600">
-          {locale === 'es' ? 'Captura del post / mensaje (para IA)' : 'Post / message screenshot (for AI)'}
-        </p>
-        {intakeScreenshotUrl && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={intakeScreenshotUrl} alt="" className="mt-2 max-h-60 rounded border border-slate-200" />
-        )}
-        <p className={`${intakeScreenshotUrl ? 'mt-2' : 'mt-1'} text-xs text-slate-500`}>
-          {locale === 'es'
-            ? 'Captura del post en redes sociales. Se usa solo para leer los datos; no se guarda como foto de la persona.'
-            : 'Screenshot of the social post. Used only to read data; not saved as the person photo.'}
-        </p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <label className="cursor-pointer rounded border border-slate-300 px-3 py-1.5 text-sm">
-            {uploadingScreenshot
-              ? '...'
-              : intakeScreenshotUrl
-                ? locale === 'es' ? 'Cambiar' : 'Replace'
-                : locale === 'es' ? 'Subir captura' : 'Upload screenshot'}
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) handleScreenshotUpload(f);
-              }}
-            />
-          </label>
-          {intakeScreenshotUrl && (
-            <>
-              <button
-                type="button"
-                onClick={handleExtract}
-                disabled={extracting}
-                className="rounded bg-[#254499] px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
-              >
-                {extracting
-                  ? locale === 'es' ? 'Leyendo...' : 'Reading...'
-                  : locale === 'es' ? '✨ Llenar con IA' : '✨ Fill with AI'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setIntakeScreenshotUrl(null)}
-                className="rounded border border-slate-300 px-3 py-1.5 text-sm"
-              >
-                {locale === 'es' ? 'Quitar' : 'Remove'}
-              </button>
-            </>
-          )}
-        </div>
-        {autofill && (
-          <p className="mt-2 text-xs text-slate-600">
-            {locale === 'es'
-              ? 'Datos extraídos. Revisa y ajusta los campos antes de guardar.'
-              : 'Data extracted. Review and adjust before saving.'}
-          </p>
-        )}
-      </section>
-
       <section className="rounded-lg border border-slate-200 p-3">
         <p className="text-xs font-medium uppercase tracking-wide text-slate-600">
-          {locale === 'es' ? 'Foto de la persona' : 'Person photo'}
+          {locale === 'es' ? 'Foto pública' : 'Public photo'}
         </p>
         {photoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={photoUrl} alt="" className="mt-2 max-h-60 rounded border border-slate-200" />
         ) : (
           <p className="mt-1 text-xs text-slate-500">
-            {locale === 'es' ? 'Solo si el reportante consintió.' : 'Only if the reporter consented.'}
+            {locale === 'es' ? 'Imagen que se muestra en el sitio público.' : 'Image shown on the public site.'}
           </p>
         )}
         <div className="mt-3 flex flex-wrap gap-2">
@@ -219,8 +122,7 @@ export function MissingForm({
         <input
           name="full_name"
           required
-          defaultValue={autofill?.full_name ?? initial?.full_name ?? ''}
-          key={`fn-${autofill?.full_name ?? ''}`}
+          defaultValue={initial?.full_name ?? ''}
           className="w-full rounded border border-slate-300 px-3 py-2 text-base"
         />
       </Field>
@@ -232,17 +134,14 @@ export function MissingForm({
             type="number"
             min={0}
             max={120}
-            defaultValue={autofill?.age ?? initial?.age ?? ''}
-            key={`age-${autofill?.age ?? ''}`}
+            defaultValue={initial?.age ?? ''}
             className="w-full rounded border border-slate-300 px-3 py-2 text-base"
           />
         </Field>
         <Field label={locale === 'es' ? 'Relación con el reportante' : 'Relationship to reporter'}>
           <input
             name="relationship"
-            placeholder={locale === 'es' ? 'p.ej. hermana' : 'e.g. sister'}
-            defaultValue={autofill?.relationship ?? initial?.relationship ?? ''}
-            key={`rel-${autofill?.relationship ?? ''}`}
+            defaultValue={initial?.relationship ?? ''}
             className="w-full rounded border border-slate-300 px-3 py-2"
           />
         </Field>
@@ -252,8 +151,7 @@ export function MissingForm({
         <Field label={tr.missing.lastSeen + ' (' + (locale === 'es' ? 'estado' : 'state') + ')'}>
           <select
             name="last_seen_state"
-            defaultValue={autofill?.last_seen_state ?? initial?.last_seen_state ?? ''}
-            key={`lss-${autofill?.last_seen_state ?? ''}`}
+            defaultValue={initial?.last_seen_state ?? ''}
             className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-base"
           >
             <option value="">—</option>
@@ -266,8 +164,7 @@ export function MissingForm({
           <input
             name="last_seen_date"
             type="date"
-            defaultValue={autofill?.last_seen_date ?? initial?.last_seen_date ?? ''}
-            key={`lsd-${autofill?.last_seen_date ?? ''}`}
+            defaultValue={initial?.last_seen_date ?? ''}
             className="w-full rounded border border-slate-300 px-3 py-2 text-base"
           />
         </Field>
@@ -276,18 +173,16 @@ export function MissingForm({
       <Field label={locale === 'es' ? 'Lugar visto por última vez' : 'Last seen location'}>
         <input
           name="last_seen_location"
-          defaultValue={autofill?.last_seen_location ?? initial?.last_seen_location ?? ''}
-          key={`lsl-${autofill?.last_seen_location ?? ''}`}
+          defaultValue={initial?.last_seen_location ?? ''}
           className="w-full rounded border border-slate-300 px-3 py-2"
         />
       </Field>
 
-      <Field label={locale === 'es' ? 'Descripción (apariencia, ropa)' : 'Description (appearance, clothing)'}>
+      <Field label={locale === 'es' ? 'Descripción' : 'Description'}>
         <textarea
           name="description"
           rows={3}
-          defaultValue={autofill?.description ?? initial?.description ?? ''}
-          key={`desc-${autofill?.description ?? ''}`}
+          defaultValue={initial?.description ?? ''}
           className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
         />
       </Field>
@@ -296,17 +191,14 @@ export function MissingForm({
         <Field label={locale === 'es' ? 'Reportante (nombre)' : 'Reporter (name)'}>
           <input
             name="reporter_name"
-            defaultValue={autofill?.reporter_name ?? initial?.reporter_name ?? ''}
-            key={`rn-${autofill?.reporter_name ?? ''}`}
+            defaultValue={initial?.reporter_name ?? ''}
             className="w-full rounded border border-slate-300 px-3 py-2"
           />
         </Field>
         <Field label={locale === 'es' ? 'Reportante (contacto)' : 'Reporter (contact)'}>
           <input
             name="reporter_contact"
-            placeholder={locale === 'es' ? 'teléfono o email' : 'phone or email'}
-            defaultValue={autofill?.reporter_contact ?? initial?.reporter_contact ?? ''}
-            key={`rc-${autofill?.reporter_contact ?? ''}`}
+            defaultValue={initial?.reporter_contact ?? ''}
             className="w-full rounded border border-slate-300 px-3 py-2"
           />
         </Field>
@@ -353,13 +245,8 @@ export function MissingForm({
         />
         <span className="text-sm text-amber-900">
           {locale === 'es'
-            ? 'El reportante autoriza publicar el caso aquí.'
-            : 'The reporter has authorized public listing here.'}{' '}
-          <span className="font-medium">
-            {locale === 'es'
-              ? 'No se puede publicar sin esto.'
-              : 'Required for publishing.'}
-          </span>
+            ? 'El reportante autoriza publicar el caso aquí. Necesario para publicar.'
+            : 'The reporter has authorized public listing here. Required for publishing.'}
         </span>
       </label>
 

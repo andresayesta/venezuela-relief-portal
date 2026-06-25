@@ -213,6 +213,89 @@ function parseFormToMissing(form: FormData) {
   });
 }
 
+// Create N missing-person rows from one intake screenshot, linked by family_group_id.
+export type GroupPersonInput = {
+  full_name: string;
+  age: number | null;
+  last_seen_location: string | null;
+  last_seen_state: string | null;
+  last_seen_date: string | null;
+  description: string | null;
+  relationship: string | null;
+};
+
+export type CreateMissingGroupInput = {
+  persons: GroupPersonInput[];
+  photo_url: string | null;
+  reporter_name: string | null;
+  reporter_contact: string | null;
+  source: string | null;
+  trust_tier: 'verified' | 'reported' | 'unverified';
+  consent_to_publish: boolean;
+  publish: boolean;
+};
+
+export async function createMissingGroupAction(
+  input: CreateMissingGroupInput,
+): Promise<ActionResult & { count?: number }> {
+  const session = await requireTeam();
+  if (!input.persons.length) return { error: 'Falta al menos una persona.' };
+  for (const p of input.persons) {
+    if (!p.full_name?.trim()) return { error: 'Cada persona necesita un nombre.' };
+  }
+  if (input.publish && session.profile.role !== 'admin') {
+    return { error: 'Solo un admin puede publicar.' };
+  }
+  if (input.publish && !input.consent_to_publish) {
+    return { error: 'No se puede publicar sin consentimiento.' };
+  }
+
+  const familyGroupId =
+    input.persons.length > 1
+      ? crypto.randomUUID()
+      : null;
+
+  const supabase = await createSupabaseServerClient();
+  const rows = input.persons.map((p) => ({
+    full_name: p.full_name.trim(),
+    age: p.age,
+    last_seen_location: p.last_seen_location,
+    last_seen_state: p.last_seen_state,
+    last_seen_date: p.last_seen_date,
+    description: p.description,
+    relationship: p.relationship,
+    photo_url: input.photo_url,
+    reporter_name: input.reporter_name,
+    reporter_contact: input.reporter_contact,
+    source: input.source,
+    trust_tier: input.trust_tier,
+    consent_to_publish: input.consent_to_publish,
+    family_group_id: familyGroupId,
+    created_by: session.userId,
+    is_published: false,
+  }));
+
+  const { data: inserted, error: insertError } = await supabase
+    .from('missing_persons')
+    .insert(rows)
+    .select('id');
+
+  if (insertError) return { error: insertError.message };
+
+  if (input.publish && inserted) {
+    const ids = inserted.map((r) => r.id);
+    const { error: pubError } = await supabase
+      .from('missing_persons')
+      .update({ is_published: true, published_by: session.userId })
+      .in('id', ids);
+    if (pubError) return { error: pubError.message };
+  }
+
+  revalidatePath('/admin');
+  revalidatePath('/desaparecidos');
+  return { ok: true, count: inserted?.length ?? 0 };
+}
+
 export async function createMissingAction(form: FormData): Promise<ActionResult> {
   const session = await requireTeam();
   const parsed = parseFormToMissing(form);

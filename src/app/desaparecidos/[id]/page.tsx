@@ -20,13 +20,25 @@ export default async function MissingDetailPage({
 
   const { data: person } = await supabase
     .from('missing_persons')
-    .select('id, full_name, age, last_seen_location, last_seen_state, last_seen_date, description, photo_url, reporter_name, reporter_contact, status, trust_tier')
+    .select('id, full_name, age, last_seen_location, last_seen_state, last_seen_date, description, photo_url, reporter_name, reporter_contact, status, trust_tier, family_group_id')
     .eq('id', id)
     .eq('is_published', true)
     .neq('status', 'closed')
     .single();
 
   if (!person) notFound();
+
+  let familyMembers: Array<{ id: string; full_name: string; age: number | null; relationship: string | null }> = [];
+  if (person.family_group_id) {
+    const { data } = await supabase
+      .from('missing_persons')
+      .select('id, full_name, age, relationship')
+      .eq('family_group_id', person.family_group_id)
+      .eq('is_published', true)
+      .neq('status', 'closed')
+      .neq('id', person.id);
+    familyMembers = data ?? [];
+  }
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-6">
@@ -82,6 +94,30 @@ export default async function MissingDetailPage({
           )}
         </div>
       </div>
+
+      {familyMembers.length > 0 && (
+        <section className="mt-6 rounded-lg border border-slate-300 bg-slate-50 p-4">
+          <h2 className="text-sm font-semibold">
+            {locale === 'es'
+              ? 'También desaparecidos en este grupo'
+              : 'Also missing in this group'}
+          </h2>
+          <ul className="mt-2 space-y-1 text-sm">
+            {familyMembers.map((m) => (
+              <li key={m.id}>
+                <Link
+                  href={`/desaparecidos/${m.id}`}
+                  className="text-[#254499] hover:underline"
+                >
+                  {m.full_name}
+                  {m.age != null && <span className="text-slate-500"> · {m.age}</span>}
+                  {m.relationship && <span className="text-slate-500"> · {m.relationship}</span>}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section className="mt-8 rounded-lg border border-slate-200 bg-slate-50 p-4">
         <h2 className="text-base font-semibold">
