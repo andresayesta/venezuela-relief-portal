@@ -175,9 +175,9 @@ export async function submitCenterAction(
 
 const ChannelSubmit = Base.extend({
   name: z.string().trim().min(1).max(200),
-  description: z.string().trim().max(1000).optional().nullable(),
-  url: z.string().url().max(500).optional().nullable().or(z.literal('').transform(() => null)),
-  why_trusted: z.string().trim().max(500).optional().nullable(),
+  description: z.string().trim().max(2000).optional().nullable(),
+  url: z.string().url().max(2048).optional().nullable().or(z.literal('').transform(() => null)),
+  why_trusted: z.string().trim().max(2000).optional().nullable(),
 });
 
 export async function submitChannelAction(
@@ -208,8 +208,8 @@ export async function submitChannelAction(
 const ResourceSubmit = Base.extend({
   category: z.string().trim().min(1).max(60),
   title: z.string().trim().min(1).max(200),
-  description: z.string().trim().max(1000).optional().nullable(),
-  url_or_contact: z.string().trim().max(500).optional().nullable(),
+  description: z.string().trim().max(2000).optional().nullable(),
+  url_or_contact: z.string().trim().max(2048).optional().nullable(),
   country: z.string().trim().max(120).optional().nullable(),
 });
 
