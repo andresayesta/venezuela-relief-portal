@@ -8,14 +8,16 @@ import { requireTeam } from '@/lib/admin-auth';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { VENEZUELAN_STATES } from '@/lib/supabase/types';
 
-// Step 1: classify the URL content. Small schema, under Anthropic's
-// schema-complexity limit (max 16 union/nullable parameters per schema).
+// All schemas below use plain strings (with prompt-level guidance on
+// allowed values) instead of enums. Anthropic's tool-schema validator
+// counts each enum value toward its complexity budget, so a single
+// 24-value enum can blow past the limit. Validate allowed values on
+// our side after the call.
 const ClassifySchema = z.object({
-  kind: z.enum(['center', 'missing', 'channel', 'resource', 'skip']),
+  kind: z.string().describe('One of: center, missing, channel, resource, skip.'),
   reasoning: z.string(),
 });
 
-// Step 2: per-kind extraction schemas, each focused with <= ~10 fields.
 const CenterSchema = z.object({
   name: z.string().nullable(),
   country: z.string().nullable().describe('ISO 2-letter (VE, US, CO, ES, EC, AR, UY, PA, CL, etc.)'),
@@ -25,14 +27,14 @@ const CenterSchema = z.object({
   accepted_items: z.array(z.string()),
   hours: z.string().nullable(),
   contact_phone: z.string().nullable(),
-  direction: z.enum(['dropoff', 'pickup']).nullable(),
+  direction: z.string().nullable().describe('Either "dropoff" or "pickup".'),
 });
 
 const MissingSchema = z.object({
   full_name: z.string().nullable(),
   age: z.number().int().min(0).max(120).nullable(),
   last_seen_location: z.string().nullable(),
-  last_seen_state: z.enum(VENEZUELAN_STATES).nullable(),
+  last_seen_state: z.string().nullable().describe('A canonical Venezuelan state name.'),
   description: z.string().nullable(),
   reporter_contact: z.string().nullable(),
 });
@@ -41,7 +43,7 @@ const ChannelSchema = z.object({
   name: z.string().nullable(),
   description: z.string().nullable(),
   url: z.string().nullable(),
-  category: z.enum(['medical', 'shelter', 'food', 'family_tracing', 'family_campaign', 'general']).nullable(),
+  category: z.string().nullable().describe('One of: medical, shelter, food, family_tracing, family_campaign, general.'),
   why_trusted: z.string().nullable(),
   payment_details: z.string().nullable().describe('Bank wire, Zelle, Venmo, mailing address as multi-line text.'),
 });
@@ -50,13 +52,19 @@ const ResourceSchema = z.object({
   title: z.string().nullable(),
   description: z.string().nullable(),
   url_or_contact: z.string().nullable(),
-  category: z.enum([
-    'emergency', 'hospital', 'shelter', 'official_app', 'official_source',
-    'consular', 'evacuation', 'family_tracing', 'anti_scam', 'in_kind_guidance',
-    'skills_volunteering', 'related_tool',
-  ]).nullable(),
+  category: z.string().nullable().describe('One of: emergency, hospital, shelter, official_app, official_source, consular, evacuation, family_tracing, anti_scam, in_kind_guidance, skills_volunteering, related_tool.'),
   country: z.string().nullable(),
 });
+
+const VALID_KINDS = new Set(['center', 'missing', 'channel', 'resource', 'skip']);
+const VALID_STATES = new Set<string>(VENEZUELAN_STATES);
+const VALID_DIRECTIONS = new Set(['dropoff', 'pickup']);
+const VALID_CHANNEL_CATS = new Set(['medical', 'shelter', 'food', 'family_tracing', 'family_campaign', 'general']);
+const VALID_RESOURCE_CATS = new Set([
+  'emergency', 'hospital', 'shelter', 'official_app', 'official_source',
+  'consular', 'evacuation', 'family_tracing', 'anti_scam', 'in_kind_guidance',
+  'skills_volunteering', 'related_tool',
+]);
 
 export type QuickAddResult =
   | { ok: true; redirect: string }
@@ -194,7 +202,8 @@ export async function quickAddFromUrlAction(url: string): Promise<QuickAddResult
     };
   }
 
-  if (classification.kind === 'skip') {
+  const kind = VALID_KINDS.has(classification.kind) ? classification.kind : 'skip';
+  if (kind === 'skip') {
     return { error: `IA: contenido no útil. ${classification.reasoning ?? ''}`.trim() };
   }
 
@@ -202,10 +211,12 @@ export async function quickAddFromUrlAction(url: string): Promise<QuickAddResult
 
   // Step 2: extract specific to kind
   try {
-    if (classification.kind === 'center') {
+    if (kind === 'center') {
       const data = await extractCenter(pageContent, parsed.toString());
       if (!data.name) return { error: 'No se pudo extraer un nombre del centro.' };
       const items = data.accepted_items.join(', ').trim() || 'sin especificar';
+      const direction = data.direction && VALID_DIRECTIONS.has(data.direction)
+        ? data.direction : 'dropoff';
       const { data: inserted, error } = await supabase
         .from('collection_centers')
         .insert({
@@ -217,7 +228,7 @@ export async function quickAddFromUrlAction(url: string): Promise<QuickAddResult
           accepted_items: items,
           hours: data.hours,
           contact_phone: data.contact_phone,
-          direction: data.direction ?? 'dropoff',
+          direction,
           trust_tier: 'unverified',
           source: `Quick Add desde ${parsed.host}`,
           created_by: session.userId,
@@ -229,16 +240,19 @@ export async function quickAddFromUrlAction(url: string): Promise<QuickAddResult
       return { ok: true, redirect: `/admin/centros/${inserted.id}` };
     }
 
-    if (classification.kind === 'missing') {
+    if (kind === 'missing') {
       const data = await extractMissing(pageContent, parsed.toString());
       if (!data.full_name) return { error: 'No se pudo extraer el nombre de la persona.' };
+      // Only persist the state if it matches a canonical Venezuelan state.
+      const last_seen_state = data.last_seen_state && VALID_STATES.has(data.last_seen_state)
+        ? data.last_seen_state : null;
       const { data: inserted, error } = await supabase
         .from('missing_persons')
         .insert({
           full_name: data.full_name,
           age: data.age,
           last_seen_location: data.last_seen_location,
-          last_seen_state: data.last_seen_state,
+          last_seen_state,
           description: data.description,
           reporter_contact: data.reporter_contact,
           trust_tier: 'unverified',
@@ -253,15 +267,17 @@ export async function quickAddFromUrlAction(url: string): Promise<QuickAddResult
       return { ok: true, redirect: `/admin/desaparecidos/${inserted.id}` };
     }
 
-    if (classification.kind === 'channel') {
+    if (kind === 'channel') {
       const data = await extractChannel(pageContent, parsed.toString());
       if (!data.name) return { error: 'No se pudo extraer el nombre de la organización.' };
+      const category = data.category && VALID_CHANNEL_CATS.has(data.category)
+        ? data.category : 'general';
       const { data: inserted, error } = await supabase
         .from('donation_channels')
         .insert({
           name: data.name,
           description: data.description,
-          category: data.category ?? 'general',
+          category,
           url: data.url ?? parsed.toString(),
           why_trusted: data.why_trusted,
           payment_details: data.payment_details,
@@ -274,13 +290,15 @@ export async function quickAddFromUrlAction(url: string): Promise<QuickAddResult
       return { ok: true, redirect: `/admin/canales/${inserted.id}` };
     }
 
-    if (classification.kind === 'resource') {
+    if (kind === 'resource') {
       const data = await extractResource(pageContent, parsed.toString());
       if (!data.title) return { error: 'No se pudo extraer el título del recurso.' };
+      const category = data.category && VALID_RESOURCE_CATS.has(data.category)
+        ? data.category : 'related_tool';
       const { data: inserted, error } = await supabase
         .from('resource_links')
         .insert({
-          category: data.category ?? 'related_tool',
+          category,
           title: data.title,
           description: data.description,
           url_or_contact: data.url_or_contact ?? parsed.toString(),
