@@ -1,42 +1,41 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { quickAddFromUrlAction } from './actions';
 import type { Locale } from '@/lib/i18n';
 
 export function QuickAddForm({ locale }: { locale: Locale }) {
-  const router = useRouter();
   const [url, setUrl] = useState('');
-  const [pending, start] = useTransition();
+  const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!url.trim()) return;
+    if (!url.trim() || pending) return;
     setError(null);
-    setStatus(locale === 'es' ? 'Cargando la página…' : 'Loading page…');
-    start(async () => {
-      try {
-        const result = await quickAddFromUrlAction(url.trim());
-        if ('error' in result) {
-          setError(result.error);
-          setStatus(null);
-          return;
-        }
-        setStatus(locale === 'es' ? '✓ Borrador creado. Redirigiendo…' : '✓ Draft created. Redirecting…');
-        router.push(result.redirect);
-        router.refresh();
-      } catch (e) {
-        setError(
-          e instanceof Error
-            ? e.message
-            : locale === 'es' ? 'Error inesperado.' : 'Unexpected error.',
-        );
+    setPending(true);
+    setStatus(locale === 'es' ? 'Cargando y leyendo la página…' : 'Loading and reading the page…');
+    try {
+      const result = await quickAddFromUrlAction(url.trim());
+      if ('error' in result) {
+        setError(result.error);
         setStatus(null);
+        setPending(false);
+        return;
       }
-    });
+      setStatus(locale === 'es' ? '✓ Borrador creado. Redirigiendo…' : '✓ Draft created. Redirecting…');
+      // Hard navigation; router.push inside an action can hang on RSC streaming.
+      window.location.assign(result.redirect);
+    } catch (e) {
+      setError(
+        e instanceof Error
+          ? e.message
+          : locale === 'es' ? 'Error inesperado.' : 'Unexpected error.',
+      );
+      setStatus(null);
+      setPending(false);
+    }
   }
 
   return (
