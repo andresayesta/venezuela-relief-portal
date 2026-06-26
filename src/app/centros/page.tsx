@@ -33,6 +33,8 @@ export default async function CentrosPage({
     query = query.neq('country', 'VE');
     if (country && country !== 'VE') {
       query = query.eq('country', country);
+      // State filter is also valid in diaspora mode, when a country is picked.
+      if (state) query = query.eq('state', state);
     }
   } else {
     query = query.eq('country', 'VE');
@@ -52,6 +54,22 @@ export default async function CentrosPage({
   const { data } = await query;
   const centers = data ?? [];
   const latest = centers[0]?.updated_at;
+
+  // For diaspora mode with a country picked: derive the list of states/regions
+  // that actually exist for that country, so the secondary filter only shows
+  // useful options. We query unfiltered-by-state so the user can change picks.
+  let diasporaStatesForCountry: string[] = [];
+  if (isDiaspora && country) {
+    const { data: stateRows } = await supabase
+      .from('collection_centers')
+      .select('state')
+      .eq('is_published', true)
+      .eq('country', country)
+      .not('state', 'is', null);
+    diasporaStatesForCountry = [
+      ...new Set((stateRows ?? []).map((r) => r.state).filter((s): s is string => !!s)),
+    ].sort();
+  }
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-6">
@@ -83,6 +101,7 @@ export default async function CentrosPage({
         currentQ={q}
         currentScope={isDiaspora ? 'diaspora' : 'inside'}
         currentCountry={country}
+        diasporaStatesForCountry={diasporaStatesForCountry}
         locale={locale}
       />
 

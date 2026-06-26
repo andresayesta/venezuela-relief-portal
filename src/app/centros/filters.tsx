@@ -11,6 +11,7 @@ export function Filters({
   currentQ,
   currentScope,
   currentCountry,
+  diasporaStatesForCountry,
   locale,
 }: {
   currentState?: string;
@@ -18,6 +19,7 @@ export function Filters({
   currentQ?: string;
   currentScope: 'inside' | 'diaspora';
   currentCountry?: string;
+  diasporaStatesForCountry?: string[];
   locale: Locale;
 }) {
   const tr = t(locale);
@@ -67,16 +69,36 @@ export function Filters({
           <option value="pickup">↑ {tr.centers.directionPickup}</option>
         </select>
         {inDiaspora ? (
-          <select
-            value={currentCountry ?? ''}
-            onChange={(e) => update({ country: e.target.value || undefined })}
-            className="rounded border border-slate-300 bg-white px-3 py-2 text-sm"
-          >
-            <option value="">{locale === 'es' ? 'País: Todos' : 'Country: All'}</option>
-            {COUNTRY_OPTIONS.filter((c) => c.code !== 'VE').map((c) => (
-              <option key={c.code} value={c.code}>{locale === 'es' ? c.es : c.en}</option>
-            ))}
-          </select>
+          <>
+            <select
+              value={currentCountry ?? ''}
+              onChange={(e) =>
+                // Clear the diaspora state when switching countries — the old state
+                // probably doesn't exist in the new country's data.
+                update({ country: e.target.value || undefined, state: undefined })
+              }
+              className="rounded border border-slate-300 bg-white px-3 py-2 text-sm"
+            >
+              <option value="">{locale === 'es' ? 'País: Todos' : 'Country: All'}</option>
+              {COUNTRY_OPTIONS.filter((c) => c.code !== 'VE').map((c) => (
+                <option key={c.code} value={c.code}>{locale === 'es' ? c.es : c.en}</option>
+              ))}
+            </select>
+            {currentCountry && diasporaStatesForCountry && diasporaStatesForCountry.length > 0 && (
+              <select
+                value={currentState ?? ''}
+                onChange={(e) => update({ state: e.target.value || undefined })}
+                className="rounded border border-slate-300 bg-white px-3 py-2 text-sm"
+              >
+                <option value="">
+                  {locale === 'es' ? 'Estado / región: Todos' : 'State / region: All'}
+                </option>
+                {diasporaStatesForCountry.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            )}
+          </>
         ) : (
           <select
             value={currentState ?? ''}
