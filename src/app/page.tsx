@@ -12,10 +12,10 @@ export default async function HomePage() {
   const supabase = await createSupabaseServerClient();
 
   // Live counts and last-updated, all from published rows only (RLS-safe).
-  const [centersAgg, missingAgg, channelsAgg, latestUpdate, relatedSites] = await Promise.all([
+  const [centersAgg, channelsAgg, resourcesAgg, latestUpdate, relatedSites] = await Promise.all([
     supabase.from('collection_centers').select('id', { count: 'exact', head: true }).eq('is_published', true),
-    supabase.from('missing_persons').select('id', { count: 'exact', head: true }).eq('is_published', true).neq('status', 'closed'),
     supabase.from('donation_channels').select('id', { count: 'exact', head: true }).eq('is_published', true),
+    supabase.from('resource_links').select('id', { count: 'exact', head: true }).eq('is_published', true),
     supabase.from('collection_centers').select('updated_at').eq('is_published', true).order('updated_at', { ascending: false }).limit(1).maybeSingle(),
     supabase.from('resource_links')
       .select('id, title, description, url_or_contact')
@@ -27,8 +27,8 @@ export default async function HomePage() {
 
   const stats = {
     centers: centersAgg.count ?? 0,
-    missing: missingAgg.count ?? 0,
     channels: channelsAgg.count ?? 0,
+    resources: resourcesAgg.count ?? 0,
   };
   const lastUpdated = latestUpdate.data?.updated_at;
 
@@ -184,8 +184,8 @@ export default async function HomePage() {
 
       <dl className="mt-12 grid grid-cols-3 gap-3 text-center">
         <Stat n={stats.centers} label={tr.home.stats.centers} />
-        <Stat n={stats.missing} label={tr.home.stats.missing} />
         <Stat n={stats.channels} label={tr.home.stats.channels} />
+        <Stat n={stats.resources} label={locale === 'es' ? 'recursos verificados' : 'verified resources'} />
       </dl>
 
       {lastUpdated && (

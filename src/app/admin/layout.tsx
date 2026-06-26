@@ -47,9 +47,6 @@ export default async function AdminLayout({
               <Link href="/admin/centros" className="text-slate-700 hover:text-[#254499]">
                 {tr.admin.manageCenters}
               </Link>
-              <Link href="/admin/desaparecidos" className="text-slate-700 hover:text-[#254499]">
-                {tr.admin.manageMissing}
-              </Link>
               {role === 'admin' && (
                 <>
                   <Link href="/admin/canales" className="text-slate-700 hover:text-[#254499]">

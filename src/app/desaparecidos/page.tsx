@@ -1,105 +1,65 @@
 import Link from 'next/link';
-import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { getLocale } from '@/lib/locale';
-import { t } from '@/lib/i18n';
-import { TrustBadge } from '@/components/TrustBadge';
-import { MissingFilters } from './filters';
-import { VENEZUELAN_STATES } from '@/lib/supabase/types';
 
 export const dynamic = 'force-dynamic';
 
-type Params = { state?: string; q?: string };
+const PARTNER_URL = 'https://desaparecidosterremotovenezuela.com';
 
-export default async function DesaparecidosPage({
-  searchParams,
-}: {
-  searchParams: Promise<Params>;
-}) {
-  const { state, q } = await searchParams;
+export default async function DesaparecidosLandingPage() {
   const locale = await getLocale();
-  const tr = t(locale);
-  const supabase = await createSupabaseServerClient();
-
-  let query = supabase
-    .from('missing_persons')
-    .select('id, full_name, age, last_seen_location, last_seen_state, last_seen_date, description, photo_url, reporter_name, reporter_contact, status, trust_tier, updated_at')
-    .eq('is_published', true)
-    .neq('status', 'closed')
-    .order('updated_at', { ascending: false });
-
-  if (state && (VENEZUELAN_STATES as readonly string[]).includes(state)) {
-    query = query.eq('last_seen_state', state);
-  }
-  if (q && q.trim()) {
-    const safe = q.trim().replace(/[%,]/g, '');
-    query = query.ilike('full_name', `%${safe}%`);
-  }
-
-  const { data } = await query;
-  const persons = data ?? [];
-
   return (
-    <div className="mx-auto max-w-3xl px-4 py-6">
-      <h1 className="text-2xl font-semibold">{tr.missing.title}</h1>
+    <div className="mx-auto max-w-2xl px-4 py-12">
+      <h1 className="text-2xl font-semibold">
+        {locale === 'es' ? 'Personas desaparecidas' : 'Missing persons'}
+      </h1>
+      <p className="mt-3 text-base leading-relaxed text-slate-700">
+        {locale === 'es'
+          ? 'Para evitar duplicar esfuerzos y mantener un solo registro confiable, redirigimos a Desaparecidos Terremoto Venezuela, una plataforma dedicada exclusivamente al registro y búsqueda de personas desaparecidas tras los terremotos.'
+          : 'To avoid duplicating efforts and keep one reliable registry, we redirect to Desaparecidos Terremoto Venezuela, a platform dedicated exclusively to registering and searching for people missing after the earthquakes.'}
+      </p>
+      <p className="mt-3 text-sm text-slate-600">
+        {locale === 'es'
+          ? 'Ahí puedes reportar a un familiar desaparecido, consultar la lista pública y aportar información sobre alguien que hayas visto.'
+          : 'There you can report a missing family member, browse the public list, and submit information about someone you have seen.'}
+      </p>
 
-      <MissingFilters currentState={state} currentQ={q} locale={locale} />
+      <a
+        href={PARTNER_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[#254499] px-5 py-3 text-base font-semibold text-white hover:bg-[#1d3777]"
+      >
+        {locale === 'es' ? 'Ir a Desaparecidos Terremoto Venezuela' : 'Go to Desaparecidos Terremoto Venezuela'}{' '}
+        ↗
+      </a>
 
-      <ul className="mt-5 space-y-3">
-        {persons.map((p) => (
-          <li key={p.id}>
-            <Link
-              href={`/desaparecidos/${p.id}`}
-              className="flex gap-4 rounded-lg border border-slate-200 p-4 hover:bg-slate-50"
-            >
-              {p.photo_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={p.photo_url}
-                  alt={p.full_name}
-                  className="h-24 w-24 flex-shrink-0 rounded object-cover"
-                />
-              ) : (
-                <div className="h-24 w-24 flex-shrink-0 rounded bg-slate-100" />
-              )}
-              <div className="min-w-0 flex-1">
-                <div className="flex items-start justify-between gap-2">
-                  <h2 className="text-base font-semibold">
-                    {p.full_name}
-                    {p.age != null && <span className="ml-1 text-slate-500">· {p.age}</span>}
-                  </h2>
-                  <div className="flex items-center gap-1">
-                    {p.status === 'found_safe' && (
-                      <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-900">
-                        {tr.missing.foundSafe}
-                      </span>
-                    )}
-                    <TrustBadge tier={p.trust_tier} locale={locale} />
-                  </div>
-                </div>
-                {(p.last_seen_state || p.last_seen_location || p.last_seen_date) && (
-                  <p className="mt-1 text-xs text-slate-600">
-                    {tr.missing.lastSeen}:{' '}
-                    {[p.last_seen_location, p.last_seen_state, p.last_seen_date].filter(Boolean).join(' · ')}
-                  </p>
-                )}
-                {p.description && <p className="mt-2 line-clamp-2 text-sm">{p.description}</p>}
-                <p className="mt-2 text-xs font-medium text-[#254499]">
-                  {locale === 'es' ? 'Ver más / Reportar info →' : 'View / Report info →'}
-                </p>
-              </div>
+      <p className="mt-3 text-xs text-slate-500">{PARTNER_URL}</p>
+
+      <div className="mt-10 rounded-lg border border-slate-200 bg-slate-50 p-4">
+        <h2 className="text-sm font-semibold">
+          {locale === 'es' ? '¿Buscas algo más?' : 'Looking for something else?'}
+        </h2>
+        <ul className="mt-2 space-y-1 text-sm text-slate-700">
+          <li>
+            <Link href="/necesito-ayuda" className="text-[#254499] hover:underline">
+              {locale === 'es' ? 'Necesito ayuda' : 'I need help'}
+            </Link>{' '}
+            —{' '}
+            {locale === 'es'
+              ? 'refugios, emergencias, ayuda consular.'
+              : 'shelters, emergencies, consular help.'}
+          </li>
+          <li>
+            <Link href="/recursos/family_tracing" className="text-[#254499] hover:underline">
+              {locale === 'es' ? 'Búsqueda de familia (ICRC, Cruz Roja)' : 'Family tracing (ICRC, Red Cross)'}
             </Link>
           </li>
-        ))}
-        {persons.length === 0 && (
-          <li className="rounded-lg border border-dashed border-slate-300 px-4 py-10 text-center text-sm text-slate-500">
-            {tr.missing.empty}
+          <li>
+            <Link href="/donar" className="text-[#254499] hover:underline">
+              {locale === 'es' ? 'Quiero ayudar' : 'I want to help'}
+            </Link>
           </li>
-        )}
-      </ul>
-
-      <div className="mt-8 rounded-lg border border-slate-200 bg-slate-50 p-4">
-        <h2 className="text-sm font-semibold">{tr.missing.report}</h2>
-        <p className="mt-1 text-xs text-slate-600">{tr.missing.reportNote}</p>
+        </ul>
       </div>
     </div>
   );

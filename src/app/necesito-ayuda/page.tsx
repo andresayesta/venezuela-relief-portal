@@ -15,7 +15,9 @@ export default async function NeedHelpPage() {
         <Card
           href="/desaparecidos"
           title={locale === 'es' ? 'Buscar a una persona desaparecida' : 'Find a missing person'}
-          desc={locale === 'es' ? 'Listado de personas reportadas. Busca por nombre o estado.' : 'List of reported persons. Search by name or state.'}
+          desc={locale === 'es'
+            ? 'Te llevamos a Desaparecidos Terremoto Venezuela, el registro dedicado para reportar y buscar.'
+            : 'We send you to Desaparecidos Terremoto Venezuela, the dedicated registry for reporting and searching.'}
         />
         <Card
           href="/centros?direction=pickup"

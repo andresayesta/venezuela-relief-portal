@@ -15,11 +15,11 @@ export default async function EnviarIndex() {
 
       <ul className="mt-6 space-y-3">
         <Card
-          href="/enviar/desaparecido"
+          href="/desaparecidos"
           title={locale === 'es' ? 'Reportar una desaparición' : 'Report a missing person'}
           desc={locale === 'es'
-            ? 'Familiar o conocido desaparecido tras los terremotos del 24 de junio.'
-            : 'Family member or friend missing after the June 24 earthquakes.'}
+            ? 'Reportamos personas desaparecidas vía Desaparecidos Terremoto Venezuela, te llevamos directo allí.'
+            : 'Missing-person reports are handled by Desaparecidos Terremoto Venezuela — we send you there.'}
         />
         <Card
           href="/enviar/centro"

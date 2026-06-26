@@ -4,7 +4,6 @@ import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { getLocale } from '@/lib/locale';
 import { t } from '@/lib/i18n';
 import { PendingQueue } from './pending-queue';
-import { TipsFeed } from './tips-feed';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,30 +13,13 @@ export default async function AdminDashboard() {
   const tr = t(locale);
   const supabase = await createSupabaseServerClient();
 
-  // Pending queue: unpublished centers + missing persons, with adder names.
-  // Tips feed: unreviewed public submissions, with which person they apply to.
-  const [
-    { data: pendingCenters },
-    { data: pendingMissing },
-    { data: newTips },
-  ] = await Promise.all([
-    supabase
-      .from('collection_centers')
-      .select('id, name, state, direction, trust_tier, created_at, created_by, submitted_by, profiles:created_by(full_name)')
-      .eq('is_published', false)
-      .order('created_at', { ascending: false }),
-    supabase
-      .from('missing_persons')
-      .select('id, full_name, last_seen_state, trust_tier, created_at, created_by, submitted_by, profiles:created_by(full_name)')
-      .eq('is_published', false)
-      .order('created_at', { ascending: false }),
-    supabase
-      .from('missing_person_tips')
-      .select('id, missing_person_id, tip_giver_name, tip_giver_contact, info, created_at, missing_persons:missing_person_id(full_name)')
-      .eq('reviewed', false)
-      .order('created_at', { ascending: false })
-      .limit(20),
-  ]);
+  // Pending queue: unpublished centers (missing-persons section retired —
+  // we now redirect to desaparecidosterremotovenezuela.com).
+  const { data: pendingCenters } = await supabase
+    .from('collection_centers')
+    .select('id, name, state, direction, trust_tier, created_at, created_by, submitted_by, profiles:created_by(full_name)')
+    .eq('is_published', false)
+    .order('created_at', { ascending: false });
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-6">
@@ -62,11 +44,11 @@ export default async function AdminDashboard() {
             : 'View, add, and edit collection centers.'}
         />
         <SectionCard
-          href="/admin/desaparecidos"
-          title={tr.admin.manageMissing}
+          href="/admin/recursos"
+          title={tr.admin.manageResources}
           desc={locale === 'es'
-            ? 'Ver, agregar y editar reportes de desaparecidos.'
-            : 'View, add, and edit missing-person reports.'}
+            ? 'Emergencias, hospitales, refugios, sitios aliados.'
+            : 'Emergencies, hospitals, shelters, partner sites.'}
         />
       </div>
 
@@ -80,21 +62,17 @@ export default async function AdminDashboard() {
             compact
           />
           <SectionCard
-            href="/admin/recursos"
-            title={tr.admin.manageResources}
-            desc={locale === 'es' ? 'Emergencias, refugios, etc.' : 'Emergency, shelters, etc.'}
+            href="/admin/quick-add"
+            title={locale === 'es' ? '✨ Añadir desde URL' : '✨ Add from URL'}
+            desc={locale === 'es' ? 'Pega un enlace y la IA crea un borrador.' : 'Paste a link and AI creates a draft.'}
             compact
           />
         </div>
       )}
 
-      {(newTips ?? []).length > 0 && (
-        <TipsFeed tips={newTips ?? []} locale={locale} />
-      )}
-
       <PendingQueue
         centers={pendingCenters ?? []}
-        missing={pendingMissing ?? []}
+        missing={[]}
         role={session.profile.role}
         locale={locale}
       />
